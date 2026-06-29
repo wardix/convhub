@@ -1,16 +1,14 @@
 import { Hono } from 'hono'
-import { cors } from 'hono/cors'
+import { corsMiddleware } from './middleware/cors.js'
+
+import { auth } from './routes/auth.js'
 
 const app = new Hono()
 
 // CORS middleware
-app.use(
-  '*',
-  cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-    credentials: true,
-  }),
-)
+app.use('*', corsMiddleware)
+
+app.route('/api/auth', auth)
 
 // Health check endpoint
 app.get('/api/health', (c) => {

@@ -9,90 +9,91 @@ interface ConversationCardProps {
   onLikeToggle?: (id: string, currentStatus: boolean) => void
 }
 
-export const ConversationCard = ({
-  conversation,
-  onLikeToggle,
-}: ConversationCardProps) => {
-  return (
-    <Link to={`/conversations/${conversation.id}`} className={styles.card}>
-      <div className={styles.header}>
-        <div className={styles.author}>
-          <div className={styles.avatar}>
-            {conversation.author.username.charAt(0).toUpperCase()}
-          </div>
-          <div className={styles.authorInfo}>
-            <span className={styles.username}>
-              {conversation.author.username}
-            </span>
-            <span className={styles.time}>
-              {formatTimeAgo(conversation.createdAt)}
-            </span>
+import React from 'react'
+
+export const ConversationCard = React.memo(
+  ({ conversation, onLikeToggle }: ConversationCardProps) => {
+    return (
+      <Link to={`/conversations/${conversation.id}`} className={styles.card}>
+        <div className={styles.header}>
+          <div className={styles.author}>
+            <div className={styles.avatar}>
+              {conversation.author.username.charAt(0).toUpperCase()}
+            </div>
+            <div className={styles.authorInfo}>
+              <span className={styles.username}>
+                {conversation.author.username}
+              </span>
+              <span className={styles.time}>
+                {formatTimeAgo(conversation.createdAt)}
+              </span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className={styles.content}>
-        <h3 className={styles.title}>{conversation.title}</h3>
-        {conversation.description && (
-          <p className={styles.description}>{conversation.description}</p>
-        )}
-      </div>
+        <div className={styles.content}>
+          <h3 className={styles.title}>{conversation.title}</h3>
+          {conversation.description && (
+            <p className={styles.description}>{conversation.description}</p>
+          )}
+        </div>
 
-      <div className={styles.tags}>
-        {conversation.tags?.map((tag) => (
-          <span
-            key={tag.id}
-            className={styles.tag}
-            style={{
-              backgroundColor: tag.color
-                ? `${tag.color}20`
-                : 'var(--bg-secondary)',
-              color: tag.color || 'var(--text-secondary)',
+        <div className={styles.tags}>
+          {conversation.tags?.map((tag) => (
+            <span
+              key={tag.id}
+              className={styles.tag}
+              style={{
+                backgroundColor: tag.color
+                  ? `${tag.color}20`
+                  : 'var(--bg-secondary)',
+                color: tag.color || 'var(--text-secondary)',
+              }}
+            >
+              #{tag.name}
+            </span>
+          ))}
+        </div>
+
+        <div className={styles.footer}>
+          <div className={styles.stats}>
+            <span className={styles.stat} title="Views">
+              👁️ {conversation.viewCount}
+            </span>
+            <span className={styles.stat} title="Comments">
+              💬 {conversation.commentCount}
+            </span>
+            <span className={styles.stat} title="Messages">
+              📝 {conversation.messageCount}
+            </span>
+          </div>
+
+          {/* We wrap LikeButton in a div that stops propagation so clicking it doesn't trigger the Link */}
+          {/* biome-ignore lint/a11y/useKeyWithClickEvents: Wrapper to stop propagation */}
+          <div
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
             }}
           >
-            #{tag.name}
-          </span>
-        ))}
-      </div>
-
-      <div className={styles.footer}>
-        <div className={styles.stats}>
-          <span className={styles.stat} title="Views">
-            👁️ {conversation.viewCount}
-          </span>
-          <span className={styles.stat} title="Comments">
-            💬 {conversation.commentCount}
-          </span>
-          <span className={styles.stat} title="Messages">
-            📝 {conversation.messageCount}
-          </span>
+            <LikeButton
+              conversationId={conversation.id}
+              likeCount={conversation.likeCount}
+              hasLiked={conversation.hasLiked}
+              onLikeChange={(id, isLiked) => {
+                if (onLikeToggle) {
+                  // If the parent provided a toggle handler, use it.
+                  // Note: onLikeToggle expects currentStatus, but isLiked is the NEW status,
+                  // wait, the signature in ConversationCard is `currentStatus: boolean`.
+                  // So if isLiked is the NEW status, the OLD status is !isLiked.
+                  return Promise.resolve(onLikeToggle(id, !isLiked))
+                }
+                return Promise.resolve()
+              }}
+            />
+          </div>
         </div>
-
-        {/* We wrap LikeButton in a div that stops propagation so clicking it doesn't trigger the Link */}
-        {/* biome-ignore lint/a11y/useKeyWithClickEvents: Wrapper to stop propagation */}
-        <div
-          onClick={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-          }}
-        >
-          <LikeButton
-            conversationId={conversation.id}
-            likeCount={conversation.likeCount}
-            hasLiked={conversation.hasLiked}
-            onLikeChange={(id, isLiked) => {
-              if (onLikeToggle) {
-                // If the parent provided a toggle handler, use it.
-                // Note: onLikeToggle expects currentStatus, but isLiked is the NEW status,
-                // wait, the signature in ConversationCard is `currentStatus: boolean`.
-                // So if isLiked is the NEW status, the OLD status is !isLiked.
-                return Promise.resolve(onLikeToggle(id, !isLiked))
-              }
-              return Promise.resolve()
-            }}
-          />
-        </div>
-      </div>
-    </Link>
-  )
-}
+      </Link>
+    )
+  },
+)

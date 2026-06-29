@@ -12,37 +12,37 @@ interface UserCardProps {
   ) => Promise<void> | void
 }
 
-export const UserCard = ({
-  user,
-  isFollowing = false,
-  onFollowChange,
-}: UserCardProps) => {
-  return (
-    <div className={styles.card}>
-      <Link to={`/profile/${user.username}`} className={styles.userInfo}>
-        <div className={styles.avatar}>
-          {user.username.charAt(0).toUpperCase()}
-        </div>
-        <div className={styles.details}>
-          <div className={styles.nameRow}>
-            {user.displayName && (
-              <span className={styles.displayName}>{user.displayName}</span>
-            )}
-            <span className={styles.username}>@{user.username}</span>
-          </div>
-          {user.bio && <p className={styles.bio}>{user.bio}</p>}
-        </div>
-      </Link>
+import React from 'react'
 
-      {onFollowChange && (
-        <div className={styles.actions}>
-          <FollowButton
-            userId={user.id}
-            isFollowing={isFollowing}
-            onFollowChange={onFollowChange}
-          />
-        </div>
-      )}
-    </div>
-  )
-}
+export const UserCard = React.memo(
+  ({ user, isFollowing = false, onFollowChange }: UserCardProps) => {
+    return (
+      <div className={styles.card}>
+        <Link to={`/profile/${user.username}`} className={styles.userInfo}>
+          <div className={styles.avatar}>
+            {user.username.charAt(0).toUpperCase()}
+          </div>
+          <div className={styles.details}>
+            <div className={styles.nameRow}>
+              {user.displayName && (
+                <span className={styles.displayName}>{user.displayName}</span>
+              )}
+              <span className={styles.username}>@{user.username}</span>
+            </div>
+            {user.bio && <p className={styles.bio}>{user.bio}</p>}
+          </div>
+        </Link>
+
+        {onFollowChange && (
+          <div className={styles.actions}>
+            <FollowButton
+              userId={user.id}
+              isFollowing={isFollowing}
+              onFollowChange={onFollowChange}
+            />
+          </div>
+        )}
+      </div>
+    )
+  },
+)

@@ -1,4 +1,11 @@
-import { type ReactNode, createContext, useEffect, useState } from 'react'
+import {
+  type ReactNode,
+  createContext,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 import { api } from '../api/client'
 import type { User } from '../types'
 import { mapUser } from '../utils/mappers'
@@ -34,19 +41,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     checkAuth()
   }, [])
 
-  const login = (userData: User) => {
+  const login = useCallback((userData: User) => {
     setUser(userData)
-  }
+  }, [])
 
-  const register = (userData: User) => {
+  const register = useCallback((userData: User) => {
     setUser(userData)
-  }
+  }, [])
 
-  const updateUser = (updates: Partial<User>) => {
+  const updateUser = useCallback((updates: Partial<User>) => {
     setUser((prev) => (prev ? { ...prev, ...updates } : null))
-  }
+  }, [])
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       await api.post('/auth/logout')
     } catch (_e) {
@@ -54,21 +61,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setUser(null)
     }
-  }
+  }, [])
+
+  const contextValue = useMemo(
+    () => ({
+      user,
+      isLoading,
+      isAuthenticated: !!user,
+      login,
+      register,
+      updateUser,
+      logout,
+    }),
+    [user, isLoading, login, register, updateUser, logout],
+  )
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isLoading,
-        isAuthenticated: !!user,
-        login,
-        register,
-        updateUser,
-        logout,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
   )
 }

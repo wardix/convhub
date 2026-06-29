@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { api } from '../api/client'
@@ -11,6 +11,7 @@ vi.mock('../api/client', () => ({
   api: {
     get: vi.fn(),
     post: vi.fn(),
+    put: vi.fn(),
     delete: vi.fn(),
   },
 }))
@@ -101,6 +102,80 @@ describe('ConversationPage', () => {
       expect(screen.getByText('A test desc')).toBeInTheDocument()
       expect(screen.getByText('#react')).toBeInTheDocument()
       expect(screen.getByText('42')).toBeInTheDocument() // button text
+    })
+  })
+
+  it('allows author to edit conversation', async () => {
+    const mockConversation = {
+      id: '123',
+      title: 'Old Title',
+      description: 'Old Description',
+      author: {
+        id: 'user-1', // Same as test user
+        username: 'testuser',
+      },
+      tags: [],
+      like_count: 0,
+      comment_count: 0,
+      message_count: 5,
+      view_count: 100,
+      has_liked: false,
+      created_at: new Date().toISOString(),
+      transcript: [],
+    }
+
+    vi.mocked(api.get).mockImplementation((url) => {
+      if (url.includes('/comments')) {
+        return Promise.resolve({ data: [] })
+      }
+      return Promise.resolve({ conversation: mockConversation })
+    })
+
+    vi.mocked(api.put).mockResolvedValue({
+      conversation: {
+        ...mockConversation,
+        title: 'New Title',
+        description: 'New Description',
+        tags: [{ id: '1', name: 'newtag' }],
+      },
+    })
+
+    render(
+      <MemoryRouter initialEntries={['/conversations/123']}>
+        <ToastProvider>
+          <Routes>
+            <Route path="/conversations/:id" element={<ConversationPage />} />
+          </Routes>
+          <ToastContainer />
+        </ToastProvider>
+      </MemoryRouter>,
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('Old Title')).toBeInTheDocument()
+    })
+
+    // Click edit
+    const editBtn = screen.getByText('✏️ Edit')
+    fireEvent.click(editBtn)
+
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText('Title')).toBeInTheDocument()
+    })
+
+    // Change title and save
+    const titleInput = screen.getByPlaceholderText('Title')
+    fireEvent.change(titleInput, { target: { value: 'New Title' } })
+
+    const saveBtn = screen.getByText('Save')
+    fireEvent.click(saveBtn)
+
+    await waitFor(() => {
+      expect(api.put).toHaveBeenCalledWith(
+        '/conversations/123',
+        expect.any(Object),
+      )
+      expect(screen.getByText('New Title')).toBeInTheDocument()
     })
   })
 })

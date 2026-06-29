@@ -224,6 +224,60 @@ describe('conversations routes', () => {
     expect(res.status).toBe(403)
   })
 
+  it("should prevent editing someone else's conversation", async () => {
+    if (!testUserId || !conversationId) return
+
+    const res = await app.request(`/api/conversations/${conversationId}`, {
+      method: 'PUT',
+      headers: {
+        Cookie: `access_token=${otherAuthToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ title: 'New Title' }),
+    })
+    expect(res.status).toBe(403)
+  })
+
+  it('should update conversation if author', async () => {
+    if (!testUserId || !conversationId) return
+
+    const res = await app.request(`/api/conversations/${conversationId}`, {
+      method: 'PUT',
+      headers: {
+        Cookie: `access_token=${authToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        title: 'Updated Title',
+        description: 'Updated Description',
+        tags: 'newtag, test',
+      }),
+    })
+    expect(res.status).toBe(200)
+    const data = await res.json()
+    expect(data.conversation.title).toBe('Updated Title')
+    expect(data.conversation.description).toBe('Updated Description')
+
+    // Check if tags are updated
+    const res2 = await app.request(`/api/conversations/${conversationId}`)
+    const data2 = await res2.json()
+    expect(data2.conversation.tags.length).toBe(2)
+  })
+
+  it('should reject title exceeding 200 chars on edit', async () => {
+    if (!testUserId || !conversationId) return
+
+    const res = await app.request(`/api/conversations/${conversationId}`, {
+      method: 'PUT',
+      headers: {
+        Cookie: `access_token=${authToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ title: 'a'.repeat(201) }),
+    })
+    expect(res.status).toBe(400)
+  })
+
   it('should delete conversation if author', async () => {
     if (!testUserId || !conversationId) return
 

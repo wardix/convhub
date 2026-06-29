@@ -307,6 +307,84 @@ conversations.get('/:id', authOptional, async (c) => {
   }
 })
 
+conversations.put('/:id', authRequired, async (c) => {
+  try {
+    const id = c.req.param('id')
+    const userId = c.get('userId')
+    const body = await c.req.json()
+    const { title, description, tags } = body
+
+    const [conversation] =
+      await sql`SELECT user_id FROM conversations WHERE id = ${id}`
+
+    if (!conversation) {
+      return c.json({ error: 'Conversation not found', status: 404 }, 404)
+    }
+
+    if (conversation.user_id !== userId) {
+      return c.json({ error: 'Unauthorized', status: 403 }, 403)
+    }
+
+    if (title !== undefined && title.length > 200) {
+      return c.json(
+        { error: 'Title cannot exceed 200 characters', status: 400 },
+        400,
+      )
+    }
+
+    if (description !== undefined && description.length > 1000) {
+      return c.json(
+        { error: 'Description cannot exceed 1000 characters', status: 400 },
+        400,
+      )
+    }
+
+    // Initialize update set with COALESCE to fallback to current values
+    await sql`
+      UPDATE conversations
+      SET title = COALESCE(${title !== undefined ? title : null}, title),
+          description = COALESCE(${description !== undefined ? description : null}, description)
+      WHERE id = ${id}
+    `
+
+    if (tags !== undefined) {
+      // Parse tags
+      const tagList =
+        typeof tags === 'string'
+          ? tags
+              .split(',')
+              .map((t) => t.trim().toLowerCase())
+              .filter((t) => t.length > 0)
+              .slice(0, 5)
+          : []
+
+      // Delete existing tags
+      await sql`DELETE FROM conversation_tags WHERE conversation_id = ${id}`
+
+      if (tagList.length > 0) {
+        // Insert new tags
+        const tagsJoined = tagList.join(',')
+
+        await sql`
+          INSERT INTO tags (name)
+          SELECT unnest(string_to_array(${tagsJoined}, ','))
+          ON CONFLICT (name) DO NOTHING
+        `
+
+        await sql`
+          INSERT INTO conversation_tags (conversation_id, tag_id)
+          SELECT ${id}, id FROM tags WHERE name = ANY(string_to_array(${tagsJoined}, ','))
+        `
+      }
+    }
+
+    const [updated] = await sql`SELECT * FROM conversations WHERE id = ${id}`
+    return c.json({ conversation: updated }, 200)
+  } catch (_err) {
+    return c.json({ error: 'Internal server error', status: 500 }, 500)
+  }
+})
+
 conversations.delete('/:id', authRequired, async (c) => {
   try {
     const id = c.req.param('id')

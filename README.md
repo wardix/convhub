@@ -57,7 +57,7 @@ bun install
 bun run dev
 ```
 
-Visit `http://localhost:5173` to see the app.
+Visit `http://localhost:5173` to see the app. The frontend dev server is configured to proxy all `/api` requests to the backend at `http://localhost:3000`.
 
 ## 📁 Project Structure
 

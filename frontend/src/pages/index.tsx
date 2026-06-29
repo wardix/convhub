@@ -1,5 +1,5 @@
-export const HomePage = () => <div>HomePage</div>
-export const ExplorePage = () => <div>ExplorePage</div>
+export { HomePage } from './HomePage'
+export { ExplorePage } from './ExplorePage'
 export { ConversationPage } from './ConversationPage'
 export { UploadPage } from './UploadPage'
 export const ProfilePage = () => <div>ProfilePage</div>

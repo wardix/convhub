@@ -13,6 +13,7 @@ export const HomePage = () => {
   const [recent, setRecent] = useState<Conversation[]>([])
   const [tags, setTags] = useState<Tag[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -83,7 +84,19 @@ export const HomePage = () => {
         </section>
 
         <main className={styles.main}>
-          {isLoading ? (
+          {error ? (
+            <div className={styles.errorContainer}>
+              <h2>Oops!</h2>
+              <p>{error}</p>
+              <button
+                type="button"
+                onClick={() => window.location.reload()}
+                className={styles.btn}
+              >
+                Try Again
+              </button>
+            </div>
+          ) : isLoading ? (
             <div className={styles.grid}>
               {Array.from({ length: 8 }).map((_, i) => (
                 // biome-ignore lint/suspicious/noArrayIndexKey: Skeletons are static and order doesn't change

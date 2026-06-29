@@ -117,4 +117,19 @@ describe('HomePage', () => {
       expect(screen.getByText('(10)')).toBeInTheDocument()
     })
   })
+
+  it('handles and displays error when API fails', async () => {
+    vi.mocked(api.get).mockRejectedValue(new Error('Network Error'))
+
+    render(
+      <MemoryRouter>
+        <HomePage />
+      </MemoryRouter>,
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('Network Error')).toBeInTheDocument()
+      expect(screen.getByText('Oops!')).toBeInTheDocument()
+    })
+  })
 })

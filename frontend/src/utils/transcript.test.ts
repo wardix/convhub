@@ -44,7 +44,7 @@ describe('transcript utils', () => {
         } as TranscriptEntry,
         {
           type: 'PLANNER_RESPONSE',
-          tool_calls: [{}, {}],
+          toolCalls: [{}, {}],
           createdAt: '2023-01-01T10:05:00Z',
         } as TranscriptEntry,
         {

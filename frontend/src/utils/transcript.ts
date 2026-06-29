@@ -34,7 +34,7 @@ export const parseTranscriptFile = (file: File): Promise<TranscriptEntry[]> => {
               createdAt: entry.createdAt ?? new Date().toISOString(),
               content: entry.content,
               thinking: entry.thinking,
-              tool_calls: entry.tool_calls,
+              toolCalls: entry.toolCalls || entry.tool_calls,
             } as TranscriptEntry
           } catch {
             throw new Error(`Invalid JSON on line ${index + 1}`)
@@ -62,12 +62,18 @@ export const getTranscriptSummary = (
   let messageCount = 0
   let toolCallCount = 0
 
-  for (const entry of entries) {
+  for (let index = 0; index < entries.length; index++) {
+    const entry = entries[index]
     if (entry.type === 'USER_INPUT' || entry.type === 'PLANNER_RESPONSE') {
       messageCount++
     }
-    if (entry.tool_calls && Array.isArray(entry.tool_calls)) {
-      toolCallCount += entry.tool_calls.length
+    if (entry.toolCalls && !Array.isArray(entry.toolCalls)) {
+      throw new Error(
+        `Invalid transcript format: toolCalls must be an array at step ${index}`,
+      )
+    }
+    if (entry.toolCalls && Array.isArray(entry.toolCalls)) {
+      toolCallCount += entry.toolCalls.length
     }
   }
 

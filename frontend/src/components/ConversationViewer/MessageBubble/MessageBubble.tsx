@@ -108,10 +108,10 @@ export const MessageBubble = ({ entry }: MessageBubbleProps) => {
         )}
 
         {/* Tool Calls */}
-        {isAi && entry.tool_calls && entry.tool_calls.length > 0 && (
+        {isAi && entry.toolCalls && entry.toolCalls.length > 0 && (
           <div className={styles.toolsList}>
             {(
-              entry.tool_calls as {
+              entry.toolCalls as {
                 name: string
                 arguments: Record<string, unknown>
               }[]

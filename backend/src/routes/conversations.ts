@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { sql } from '../db/connection.js'
 import { authOptional, authRequired } from '../middleware/auth.js'
 import type { TranscriptEntry } from '../types/index.js'
+import { buildConversationQuery } from '../utils/queryBuilder.js'
 import {
   countMessages,
   parseJsonl,
@@ -138,61 +139,18 @@ conversations.get('/', authOptional, async (c) => {
     const offset = (page - 1) * limit
     const userId = c.get('userId')
 
-    const args: string[] = []
-
-    // Build the query
-    let query = `
-      SELECT c.id, c.title, c.description, c.message_count, c.like_count, 
-             c.comment_count, c.view_count, c.created_at,
-             json_build_object('id', c.user_id, 'username', u.username, 'avatar_url', u.avatar_url) as author,
-             COALESCE(json_agg(json_build_object('id', t.id, 'name', t.name, 'color', t.color)) FILTER (WHERE t.id IS NOT NULL), '[]') as tags
-      `
-
-    if (userId) {
-      args.push(userId as string)
-      query += `, EXISTS(SELECT 1 FROM likes l WHERE l.conversation_id = c.id AND l.user_id = $${args.length}) as "has_liked" `
-    } else {
-      query += `, false as "has_liked" `
-    }
-
-    query += `
-      FROM conversations c
-      JOIN users u ON c.user_id = u.id
-      LEFT JOIN conversation_tags ct ON c.id = ct.conversation_id
-      LEFT JOIN tags t ON ct.tag_id = t.id
-      WHERE 1=1
-    `
-
-    if (q) {
-      args.push(`%${q}%`)
-      query += ` AND (c.title ILIKE $${args.length} OR c.description ILIKE $${args.length})`
-    }
-    if (tag) {
-      args.push(tag)
-      query += ` AND EXISTS (
-        SELECT 1 FROM conversation_tags ct2 
-        JOIN tags t2 ON ct2.tag_id = t2.id 
-        WHERE ct2.conversation_id = c.id AND t2.name = $${args.length}
-      )`
-    }
-
-    query += ' GROUP BY c.id, u.id'
-
-    if (sort === 'popular') {
-      query += ' ORDER BY c.like_count DESC, c.created_at DESC'
-    } else if (sort === 'commented') {
-      query += ' ORDER BY c.comment_count DESC, c.created_at DESC'
-    } else {
-      query += ' ORDER BY c.created_at DESC'
-    }
+    const { query, countQuery, args } = buildConversationQuery({
+      currentUserId: userId as string | undefined,
+      q,
+      tag,
+      sort,
+      limit,
+      offset,
+    })
 
     // Get count first
-    const countQuery = `SELECT COUNT(*) FROM (${query}) AS subquery`
     const countRes = await sql.unsafe(countQuery, args)
     const total = Number.parseInt(countRes[0].count, 10)
-
-    // Add pagination
-    query += ` LIMIT ${limit} OFFSET ${offset}`
 
     const rows = await sql.unsafe(query, args)
 
@@ -218,36 +176,16 @@ conversations.get('/trending', authOptional, async (c) => {
   try {
     const userId = c.get('userId')
     const limit = 10
-    const args: string[] = []
-
-    let query = `
-      SELECT c.id, c.title, c.description, c.message_count, c.like_count, 
-             c.comment_count, c.view_count, c.created_at,
-             json_build_object('id', c.user_id, 'username', u.username, 'avatar_url', u.avatar_url) as author,
-             COALESCE(json_agg(json_build_object('id', t.id, 'name', t.name, 'color', t.color)) FILTER (WHERE t.id IS NOT NULL), '[]') as tags
-    `
-
-    if (userId) {
-      args.push(userId as string)
-      query += `, EXISTS(SELECT 1 FROM likes l WHERE l.conversation_id = c.id AND l.user_id = $${args.length}) as "has_liked" `
-    } else {
-      query += `, false as "has_liked" `
-    }
-
-    query += `
-      FROM conversations c
-      JOIN users u ON c.user_id = u.id
-      LEFT JOIN conversation_tags ct ON c.id = ct.conversation_id
-      LEFT JOIN tags t ON ct.tag_id = t.id
-      WHERE c.created_at >= NOW() - INTERVAL '7 days'
-      GROUP BY c.id, u.id
-      ORDER BY (c.like_count * 3 + c.comment_count * 2 + c.view_count) DESC, c.created_at DESC
-      LIMIT ${limit}
-    `
+    const { query, args } = buildConversationQuery({
+      currentUserId: userId as string | undefined,
+      trending: true,
+      limit,
+    })
 
     const rows = await sql.unsafe(query, args)
     return c.json({ data: rows }, 200)
-  } catch (_err) {
+  } catch (err) {
+    console.error('TRENDING ERROR:', err)
     return c.json({ error: 'Internal server error', status: 500 }, 500)
   }
 })
@@ -256,31 +194,11 @@ conversations.get('/:id', authOptional, async (c) => {
   try {
     const id = c.req.param('id')
     const userId = c.get('userId')
-    const args: string[] = []
-
-    let query = `
-      SELECT c.*,
-             json_build_object('id', c.user_id, 'username', u.username, 'avatar_url', u.avatar_url) as author,
-             COALESCE(json_agg(json_build_object('id', t.id, 'name', t.name, 'color', t.color)) FILTER (WHERE t.id IS NOT NULL), '[]') as tags
-    `
-
-    if (userId) {
-      args.push(userId as string)
-      query += `, EXISTS(SELECT 1 FROM likes l WHERE l.conversation_id = c.id AND l.user_id = $${args.length}) as "has_liked" `
-    } else {
-      query += `, false as "has_liked" `
-    }
-
-    args.push(id)
-
-    query += `
-      FROM conversations c
-      JOIN users u ON c.user_id = u.id
-      LEFT JOIN conversation_tags ct ON c.id = ct.conversation_id
-      LEFT JOIN tags t ON ct.tag_id = t.id
-      WHERE c.id = $${args.length}
-      GROUP BY c.id, u.id
-    `
+    const { query, args } = buildConversationQuery({
+      currentUserId: userId as string | undefined,
+      id,
+      includeTranscript: true,
+    })
 
     const rows = await sql.unsafe(query, args)
 

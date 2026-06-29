@@ -35,6 +35,7 @@ describe('SettingsPage', () => {
       login: vi.fn(),
       register: vi.fn(),
       logout: vi.fn(),
+      updateUser: vi.fn(),
     })
   })
 
@@ -78,6 +79,13 @@ describe('SettingsPage', () => {
       expect(
         screen.getByText('Profile updated successfully'),
       ).toBeInTheDocument()
+
+      const authContext = vi.mocked(useAuthHook.useAuth).mock.results[0].value
+      expect(authContext.updateUser).toHaveBeenCalledWith({
+        displayName: 'New Name',
+        bio: 'Test bio',
+        avatarUrl: 'https://example.com/avatar.jpg',
+      })
     })
   })
 

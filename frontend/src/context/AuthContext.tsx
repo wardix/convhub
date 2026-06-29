@@ -8,6 +8,7 @@ interface AuthContextType {
   isAuthenticated: boolean
   login: (user: User) => void
   register: (user: User) => void
+  updateUser: (updates: Partial<User>) => void
   logout: () => void
 }
 
@@ -40,6 +41,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(userData)
   }
 
+  const updateUser = (updates: Partial<User>) => {
+    setUser((prev) => (prev ? { ...prev, ...updates } : null))
+  }
+
   const logout = async () => {
     try {
       await api.post('/auth/logout')
@@ -58,6 +63,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         isAuthenticated: !!user,
         login,
         register,
+        updateUser,
         logout,
       }}
     >

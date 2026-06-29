@@ -5,7 +5,7 @@ import type { User } from '../types'
 import styles from './SettingsPage.module.css'
 
 export const SettingsPage = () => {
-  const { user } = useAuth()
+  const { user, updateUser } = useAuth()
 
   const [displayName, setDisplayName] = useState(user?.displayName || '')
   const [bio, setBio] = useState(user?.bio || '')
@@ -44,9 +44,11 @@ export const SettingsPage = () => {
       })
 
       // Update auth context with new user data
-      // Note: we might not have an easy way to update the user in the context
-      // without modifying useAuth. We can assume reloading or updating local state is enough.
-      // Actually login function just sets the user if it supports it, but usually login takes token.
+      updateUser({
+        displayName: displayName.trim() || undefined,
+        bio: bio.trim() || undefined,
+        avatarUrl: avatarUrl.trim() || undefined,
+      })
 
       showToast('Profile updated successfully', 'success')
     } catch (_err) {

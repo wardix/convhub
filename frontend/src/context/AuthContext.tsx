@@ -1,6 +1,7 @@
 import { type ReactNode, createContext, useEffect, useState } from 'react'
 import { api } from '../api/client'
 import type { User } from '../types'
+import { mapUser } from '../utils/mappers'
 
 interface AuthContextType {
   user: User | null
@@ -21,8 +22,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const data = await api.get('/auth/me')
-        setUser(data.user)
+        const data = await api.get<{ user: User }>('/auth/me')
+        setUser(mapUser(data.user))
       } catch (_error) {
         setUser(null)
       } finally {

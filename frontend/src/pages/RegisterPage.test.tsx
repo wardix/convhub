@@ -3,6 +3,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ApiError, api } from '../api/client'
 import { AuthContext } from '../context/AuthContext'
+import { ToastProvider } from '../context/ToastContext'
 import { RegisterPage } from './RegisterPage'
 
 const { mockNavigate } = vi.hoisted(() => {
@@ -48,13 +49,16 @@ describe('RegisterPage', () => {
           isLoading: false,
           isAuthenticated,
           login: vi.fn(),
+          updateUser: vi.fn(),
           register: mockRegister,
           logout: vi.fn(),
         }}
       >
-        <MemoryRouter>
-          <RegisterPage />
-        </MemoryRouter>
+        <ToastProvider>
+          <MemoryRouter>
+            <RegisterPage />
+          </MemoryRouter>
+        </ToastProvider>
       </AuthContext.Provider>,
     )
   }
@@ -130,6 +134,19 @@ describe('RegisterPage', () => {
       id: '1',
       email: 'test@example.com',
       username: 'testuser',
+      display_name: 'Test User',
+      avatar_url: null,
+      bio: null,
+      created_at: '2023-01-01',
+    }
+    const expectedMappedUser = {
+      id: '1',
+      email: 'test@example.com',
+      username: 'testuser',
+      displayName: 'Test User',
+      avatarUrl: null,
+      bio: null,
+      createdAt: '2023-01-01',
     }
     vi.mocked(api.post).mockResolvedValueOnce({ user: mockUser })
 
@@ -154,10 +171,10 @@ describe('RegisterPage', () => {
       expect(api.post).toHaveBeenCalledWith('/auth/register', {
         email: 'test@example.com',
         username: 'testuser',
-        displayName: null,
+        display_name: null,
         password: 'password123',
       })
-      expect(mockRegister).toHaveBeenCalledWith(mockUser)
+      expect(mockRegister).toHaveBeenCalledWith(expectedMappedUser)
       expect(mockNavigate).toHaveBeenCalledWith('/')
     })
   })

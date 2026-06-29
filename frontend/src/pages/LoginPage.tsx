@@ -4,10 +4,13 @@ import { Link, useNavigate } from 'react-router-dom'
 import { ApiError, api } from '../api/client'
 import { FormInput } from '../components/AuthForms/FormInput'
 import { useAuth } from '../hooks/useAuth'
+import { useToast } from '../hooks/useToast'
+import { mapUser } from '../utils/mappers'
 import styles from './Auth.module.css'
 
 export const LoginPage = () => {
   const { isAuthenticated, login } = useAuth()
+  const { showToast } = useToast()
   const navigate = useNavigate()
 
   const [email, setEmail] = useState('')
@@ -54,8 +57,12 @@ export const LoginPage = () => {
 
     setIsLoading(true)
     try {
-      const data = await api.post('/auth/login', { email, password })
-      login(data.user)
+      const data = await api.post<{ user: unknown }>('/auth/login', {
+        email,
+        password,
+      })
+      login(mapUser(data.user))
+      showToast('Logged in successfully', 'success')
       navigate('/')
     } catch (err) {
       if (err instanceof ApiError) {

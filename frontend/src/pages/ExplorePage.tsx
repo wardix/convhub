@@ -6,6 +6,7 @@ import { ConversationCard } from '../components/ConversationCard/ConversationCar
 import { SearchBar } from '../components/SearchBar/SearchBar'
 import { ConversationCardSkeleton } from '../components/Skeleton'
 import type { Conversation, PaginatedResponse, Tag } from '../types'
+import { mapConversation, mapTag } from '../utils/mappers'
 import styles from './ExplorePage.module.css'
 
 type SortOption = 'recent' | 'popular' | 'discussed'
@@ -33,7 +34,7 @@ export const ExplorePage = () => {
     const fetchTags = async () => {
       try {
         const data = await api.get<{ data: Tag[] }>('/tags')
-        setTags(data.data)
+        setTags(data.data.map(mapTag))
       } catch (_err) {
         // Tag loading failure is not critical enough for a full error page
       }
@@ -53,9 +54,10 @@ export const ExplorePage = () => {
         if (activeTag) url += `&tag=${encodeURIComponent(activeTag)}`
 
         const response = await api.get<PaginatedResponse<Conversation>>(url)
+        const mappedData = response.data.map(mapConversation)
 
         setConversations((prev) =>
-          reset ? response.data : [...prev, ...response.data],
+          reset ? mappedData : [...prev, ...mappedData],
         )
         setHasMore(pageNum < response.pagination.pages)
       } catch (_err) {

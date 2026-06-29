@@ -68,12 +68,12 @@ describe('ConversationPage', () => {
         username: 'otheruser',
       },
       tags: [{ id: '1', name: 'react', color: '#61dafb' }],
-      likeCount: 42,
-      commentCount: 0,
-      messageCount: 5,
-      viewCount: 100,
-      hasLiked: false,
-      createdAt: new Date().toISOString(),
+      like_count: 42,
+      comment_count: 0,
+      message_count: 5,
+      view_count: 100,
+      has_liked: false,
+      created_at: new Date().toISOString(),
       transcript: [],
     }
 

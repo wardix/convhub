@@ -16,6 +16,7 @@ import type {
   User,
   UserProfile,
 } from '../types'
+import { mapConversation, mapUser, mapUserProfile } from '../utils/mappers'
 import styles from './ProfilePage.module.css'
 
 type Tab = 'conversations' | 'followers' | 'following'
@@ -48,7 +49,7 @@ export const ProfilePage = () => {
         const response = await api.get<{ user: UserProfile }>(
           `/users/${username}`,
         )
-        setProfile(response.user)
+        setProfile(mapUserProfile(response.user))
       } catch (err: unknown) {
         if (
           typeof err === 'object' &&
@@ -89,18 +90,20 @@ export const ProfilePage = () => {
 
         if (activeTab === 'conversations') {
           const res = await api.get<PaginatedResponse<Conversation>>(endpoint)
+          const mappedData = res.data.map(mapConversation)
           if (isLoadMore) {
-            setConversations((prev) => [...prev, ...res.data])
+            setConversations((prev) => [...prev, ...mappedData])
           } else {
-            setConversations(res.data)
+            setConversations(mappedData)
           }
           setHasMore(pageNum < res.pagination.pages)
         } else {
           const res = await api.get<PaginatedResponse<User>>(endpoint)
+          const mappedData = res.data.map(mapUser)
           if (isLoadMore) {
-            setUsersList((prev) => [...prev, ...res.data])
+            setUsersList((prev) => [...prev, ...mappedData])
           } else {
-            setUsersList(res.data)
+            setUsersList(mappedData)
           }
           setHasMore(pageNum < res.pagination.pages)
         }
@@ -128,14 +131,16 @@ export const ProfilePage = () => {
           const res = await api.get<PaginatedResponse<Conversation>>(
             `/users/${username}/conversations?page=${nextPage}&limit=10`,
           )
-          setConversations((prev) => [...prev, ...res.data])
+          const mappedData = res.data.map(mapConversation)
+          setConversations((prev) => [...prev, ...mappedData])
           setHasMore(nextPage < res.pagination.pages)
         } else {
           const type = activeTab === 'followers' ? 'followers' : 'following'
           const res = await api.get<PaginatedResponse<User>>(
             `/users/${profile.id}/${type}?page=${nextPage}&limit=20`,
           )
-          setUsersList((prev) => [...prev, ...res.data])
+          const mappedData = res.data.map(mapUser)
+          setUsersList((prev) => [...prev, ...mappedData])
           setHasMore(nextPage < res.pagination.pages)
         }
       } catch (_err) {

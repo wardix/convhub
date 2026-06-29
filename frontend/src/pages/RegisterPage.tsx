@@ -5,10 +5,13 @@ import { ApiError, api } from '../api/client'
 import { FormInput } from '../components/AuthForms/FormInput'
 import { PasswordStrength } from '../components/AuthForms/PasswordStrength'
 import { useAuth } from '../hooks/useAuth'
+import { useToast } from '../hooks/useToast'
+import { mapUser } from '../utils/mappers'
 import styles from './Auth.module.css'
 
 export const RegisterPage = () => {
   const { isAuthenticated, register } = useAuth()
+  const { showToast } = useToast()
   const navigate = useNavigate()
 
   const [email, setEmail] = useState('')
@@ -76,13 +79,14 @@ export const RegisterPage = () => {
 
     setIsLoading(true)
     try {
-      const data = await api.post('/auth/register', {
+      const data = await api.post<{ user: unknown }>('/auth/register', {
         email,
         username,
-        displayName: displayName || null,
+        display_name: displayName || null,
         password,
       })
-      register(data.user)
+      register(mapUser(data.user))
+      showToast('Account created successfully', 'success')
       navigate('/')
     } catch (err) {
       if (err instanceof ApiError) {

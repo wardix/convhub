@@ -9,6 +9,7 @@ import { TranscriptSkeleton } from '../components/Skeleton'
 import { useAuth } from '../hooks/useAuth'
 import { useToast } from '../hooks/useToast'
 import type { ConversationDetail } from '../types'
+import { mapConversationDetail } from '../utils/mappers'
 import styles from './ConversationPage.module.css'
 
 export const ConversationPage = () => {
@@ -29,7 +30,7 @@ export const ConversationPage = () => {
       try {
         setIsLoading(true)
         const data = await api.get<ConversationDetail>(`/conversations/${id}`)
-        setConversation(data)
+        setConversation(mapConversationDetail(data))
       } catch (err) {
         setError(
           err instanceof Error ? err.message : 'Failed to load conversation',

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { api } from '../../api/client'
 import type { Tag } from '../../types'
+import { mapTag } from '../../utils/mappers'
 import styles from './TagInput.module.css'
 
 interface TagInputProps {
@@ -28,8 +29,9 @@ export const TagInput = ({ value, onChange, maxTags = 5 }: TagInputProps) => {
         const data = await api.get<{ data: Tag[] }>(
           `/tags?search=${encodeURIComponent(inputValue)}`,
         )
+        const mappedTags = data.data.map(mapTag)
         // Filter out tags already selected
-        const available = data.data.filter(
+        const available = mappedTags.filter(
           (t) =>
             !value.find((v) => v.name.toLowerCase() === t.name.toLowerCase()),
         )

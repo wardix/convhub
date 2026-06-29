@@ -5,6 +5,7 @@ import { api } from '../api/client'
 import { ConversationCard } from '../components/ConversationCard/ConversationCard'
 import { ConversationCardSkeleton } from '../components/Skeleton'
 import type { Conversation, PaginatedResponse, Tag } from '../types'
+import { mapConversation, mapTag } from '../utils/mappers'
 import styles from './HomePage.module.css'
 
 export const HomePage = () => {
@@ -26,9 +27,9 @@ export const HomePage = () => {
           api.get<{ data: Tag[] }>('/tags'),
         ])
 
-        setTrending(trendingData.data)
-        setRecent(recentData.data)
-        setTags(tagsData.data.slice(0, 15)) // Show top 15 tags
+        setTrending(trendingData.data.map(mapConversation))
+        setRecent(recentData.data.map(mapConversation))
+        setTags(tagsData.data.map(mapTag).slice(0, 15)) // Show top 15 tags
       } catch (err) {
         setError(
           err instanceof Error ? err.message : 'Failed to load home data',

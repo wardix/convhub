@@ -26,13 +26,13 @@ describe('CommentSection', () => {
         author: {
           id: 'user2',
           username: 'alice',
-          displayName: null,
+          display_name: null,
           email: 'alice@example.com',
-          avatarUrl: null,
+          avatar_url: null,
           bio: null,
-          createdAt: '',
+          created_at: '',
         },
-        createdAt: new Date().toISOString(),
+        created_at: new Date().toISOString(),
       },
       {
         id: 'c2',
@@ -40,13 +40,13 @@ describe('CommentSection', () => {
         author: {
           id: 'currentUser',
           username: 'bob',
-          displayName: null,
+          display_name: null,
           email: 'bob@example.com',
-          avatarUrl: null,
+          avatar_url: null,
           bio: null,
-          createdAt: '',
+          created_at: '',
         },
-        createdAt: new Date().toISOString(),
+        created_at: new Date().toISOString(),
       },
     ],
     pagination: {
@@ -129,8 +129,15 @@ describe('CommentSection', () => {
       comment: {
         id: 'c3',
         content: 'New comment text',
-        author: { id: 'currentUser', username: 'bob' },
-        createdAt: new Date().toISOString(),
+        author: {
+          id: 'currentUser',
+          username: 'bob',
+          display_name: null,
+          avatar_url: null,
+          bio: null,
+          created_at: '',
+        },
+        created_at: new Date().toISOString(),
       },
     })
 

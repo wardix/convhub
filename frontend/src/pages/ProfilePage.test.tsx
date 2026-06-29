@@ -21,17 +21,24 @@ describe('ProfilePage', () => {
     email: 'test@example.com',
     username: 'testuser',
     displayName: 'Test User',
+    display_name: 'Test User',
+    avatar_url: null,
     avatarUrl: null,
     bio: 'Hello world',
     createdAt: new Date().toISOString(),
+    created_at: new Date().toISOString(),
   }
 
   const mockProfile = {
     ...mockUser,
     followerCount: 5,
+    follower_count: 5,
     followingCount: 3,
+    following_count: 3,
     conversationCount: 10,
+    conversation_count: 10,
     isFollowing: false,
+    is_following: false,
   }
 
   beforeEach(() => {

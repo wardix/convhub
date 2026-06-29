@@ -1,9 +1,9 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { api } from '../api/client'
-import { ApiError } from '../api/client'
+import { ApiError, api } from '../api/client'
 import { AuthContext } from '../context/AuthContext'
+import { ToastProvider } from '../context/ToastContext'
 import { LoginPage } from './LoginPage'
 
 const { mockNavigate } = vi.hoisted(() => {
@@ -51,13 +51,16 @@ describe('LoginPage', () => {
           isLoading: false,
           isAuthenticated,
           login: mockLogin,
+          updateUser: vi.fn(),
           register: vi.fn(),
           logout: vi.fn(),
         }}
       >
-        <MemoryRouter>
-          <LoginPage />
-        </MemoryRouter>
+        <ToastProvider>
+          <MemoryRouter>
+            <LoginPage />
+          </MemoryRouter>
+        </ToastProvider>
       </AuthContext.Provider>,
     )
   }
@@ -110,6 +113,19 @@ describe('LoginPage', () => {
       id: '1',
       email: 'test@example.com',
       username: 'testuser',
+      display_name: 'Test User',
+      avatar_url: null,
+      bio: null,
+      created_at: '2023-01-01',
+    }
+    const expectedMappedUser = {
+      id: '1',
+      email: 'test@example.com',
+      username: 'testuser',
+      displayName: 'Test User',
+      avatarUrl: null,
+      bio: null,
+      createdAt: '2023-01-01',
     }
     vi.mocked(api.post).mockResolvedValueOnce({ user: mockUser })
 
@@ -129,7 +145,7 @@ describe('LoginPage', () => {
         email: 'test@example.com',
         password: 'password123',
       })
-      expect(mockLogin).toHaveBeenCalledWith(mockUser)
+      expect(mockLogin).toHaveBeenCalledWith(expectedMappedUser)
       expect(mockNavigate).toHaveBeenCalledWith('/')
     })
   })

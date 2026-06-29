@@ -10,33 +10,6 @@ export class ApiError extends Error {
   }
 }
 
-function snakeToCamel(str: string): string {
-  return str.replace(/([-_][a-z])/gi, ($1) => {
-    return $1.toUpperCase().replace('-', '').replace('_', '')
-  })
-}
-
-// biome-ignore lint/suspicious/noExplicitAny: generic transformation
-function transformKeys(obj: any): any {
-  if (obj === null || typeof obj !== 'object') {
-    return obj
-  }
-
-  if (Array.isArray(obj)) {
-    return obj.map((item) => transformKeys(item))
-  }
-
-  // biome-ignore lint/suspicious/noExplicitAny: generic transformation
-  const camelObj: Record<string, any> = {}
-  for (const key in obj) {
-    if (Object.prototype.hasOwnProperty.call(obj, key)) {
-      const camelKey = snakeToCamel(key)
-      camelObj[camelKey] = transformKeys(obj[key])
-    }
-  }
-  return camelObj
-}
-
 function camelToSnake(str: string): string {
   return str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)
 }
@@ -110,7 +83,7 @@ async function apiFetch<T = unknown>(
       throw new ApiError(response.status, data.error || 'API Error', data)
     }
 
-    return transformKeys(data)
+    return data
   } catch (error) {
     if (error instanceof ApiError) {
       throw error

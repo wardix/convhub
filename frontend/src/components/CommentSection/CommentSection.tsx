@@ -4,6 +4,7 @@ import { api } from '../../api/client'
 import { useAuth } from '../../hooks/useAuth'
 import type { Comment, PaginatedResponse } from '../../types'
 import { formatTimeAgo } from '../../utils/formatDate'
+import { mapComment } from '../../utils/mappers'
 import styles from './CommentSection.module.css'
 
 interface CommentSectionProps {
@@ -33,8 +34,9 @@ export const CommentSection = ({ conversationId }: CommentSectionProps) => {
         const data = await api.get<PaginatedResponse<Comment>>(
           `/conversations/${conversationId}/comments?page=${pageNum}&limit=20`,
         )
+        const mappedData = data.data.map(mapComment)
 
-        setComments((prev) => (reset ? data.data : [...prev, ...data.data]))
+        setComments((prev) => (reset ? mappedData : [...prev, ...mappedData]))
         setTotalCount(data.pagination.total)
         setHasMore(pageNum < data.pagination.pages)
         setPage(pageNum)
@@ -65,7 +67,7 @@ export const CommentSection = ({ conversationId }: CommentSectionProps) => {
         },
       )
 
-      setComments((prev) => [data.comment, ...prev])
+      setComments((prev) => [mapComment(data.comment), ...prev])
       setTotalCount((prev) => prev + 1)
       setNewComment('')
     } catch (_err) {

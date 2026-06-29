@@ -4,7 +4,8 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "bun run --hot src/index.ts"
+    "dev": "bun run --hot src/index.ts",
+    "db:migrate": "bun run src/db/migrate.ts"
   },
   "devDependencies": {
     "@types/bun": "latest"

@@ -3,6 +3,7 @@ import { Hono } from 'hono'
 import { deleteCookie, getCookie, setCookie } from 'hono/cookie'
 import { sql } from '../db/connection.js'
 import { authRequired } from '../middleware/auth.js'
+import { rateLimit } from '../middleware/rateLimit.js'
 import {
   signAccessToken,
   signRefreshToken,
@@ -16,6 +17,9 @@ import {
 } from '../utils/validation.js'
 
 const auth = new Hono()
+
+const loginLimiter = rateLimit({ limit: 5, windowMs: 60 * 1000 }) // 5 requests per minute
+const registerLimiter = rateLimit({ limit: 3, windowMs: 60 * 60 * 1000 }) // 3 requests per hour
 
 function setAuthCookies(c: Context, accessToken: string, refreshToken: string) {
   const isProd = process.env.NODE_ENV === 'production'
@@ -37,7 +41,7 @@ function setAuthCookies(c: Context, accessToken: string, refreshToken: string) {
   })
 }
 
-auth.post('/register', async (c) => {
+auth.post('/register', registerLimiter, async (c) => {
   try {
     const { email, username, password, display_name } = await c.req.json()
 
@@ -88,7 +92,7 @@ auth.post('/register', async (c) => {
   }
 })
 
-auth.post('/login', async (c) => {
+auth.post('/login', loginLimiter, async (c) => {
   try {
     const { email, password } = await c.req.json()
 

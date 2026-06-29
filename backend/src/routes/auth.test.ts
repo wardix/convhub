@@ -124,4 +124,63 @@ describe('auth routes', () => {
       expect(data.user.oauth_provider).toBeUndefined() // Should not return oauth info
     })
   })
+
+  describe('Rate Limiting', () => {
+    it('should rate limit register endpoint (4th attempt returns 429)', async () => {
+      // 3 successful (or invalid) requests
+      for (let i = 0; i < 3; i++) {
+        await app.request('/api/auth/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Forwarded-For': '192.168.1.100',
+          },
+          body: JSON.stringify({ email: `test${i}@example.com` }),
+        })
+      }
+
+      // 4th request should fail with 429
+      const res = await app.request('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Forwarded-For': '192.168.1.100',
+        },
+        body: JSON.stringify({ email: 'test4@example.com' }),
+      })
+
+      expect(res.status).toBe(429)
+      expect(res.headers.get('Retry-After')).toBeTruthy()
+    })
+
+    it('should rate limit login endpoint (6th attempt returns 429)', async () => {
+      // 5 requests
+      for (let i = 0; i < 5; i++) {
+        await app.request('/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Forwarded-For': '192.168.1.100',
+          },
+          body: JSON.stringify({
+            email: 'test@example.com',
+            password: 'wrong',
+          }),
+        })
+      }
+
+      // 6th request should fail with 429
+      const res = await app.request('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Forwarded-For': '192.168.1.100',
+        },
+        body: JSON.stringify({ email: 'test@example.com', password: 'wrong' }),
+      })
+
+      expect(res.status).toBe(429)
+      expect(res.headers.get('Retry-After')).toBeTruthy()
+    })
+  })
 })

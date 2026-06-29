@@ -22,16 +22,16 @@ users.get('/:username', authOptional, async (c) => {
       return c.json({ error: 'User not found', status: 404 }, 404)
     }
 
-    let isFollowing = false
+    let is_following = false
     if (currentUserId) {
       const [follow] = await sql.unsafe(
         'SELECT 1 FROM follows WHERE follower_id = $1 AND following_id = $2',
         [currentUserId, user.id],
       )
-      if (follow) isFollowing = true
+      if (follow) is_following = true
     }
 
-    return c.json({ user: { ...user, isFollowing } }, 200)
+    return c.json({ user: { ...user, is_following } }, 200)
   } catch (_err) {
     return c.json({ error: 'Internal server error', status: 500 }, 500)
   }
@@ -65,9 +65,9 @@ users.get('/:username/conversations', authOptional, async (c) => {
 
     if (currentUserId) {
       args.push(currentUserId as string)
-      query += `, EXISTS(SELECT 1 FROM likes l WHERE l.conversation_id = c.id AND l.user_id = $${args.length}) as "hasLiked" `
+      query += `, EXISTS(SELECT 1 FROM likes l WHERE l.conversation_id = c.id AND l.user_id = $${args.length}) as "has_liked" `
     } else {
-      query += `, false as "hasLiked" `
+      query += `, false as "has_liked" `
     }
 
     query += `

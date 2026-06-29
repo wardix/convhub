@@ -91,7 +91,7 @@ describe('follows routes', () => {
     const data = await res.json()
     expect(data.data.length).toBe(1)
     expect(data.data[0].id).toBe(user1Id)
-    expect(data.data[0].isFollowing).toBe(false)
+    expect(data.data[0].is_following).toBe(false)
   })
 
   it('should allow user1 to unfollow user2', async () => {

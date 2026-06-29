@@ -86,9 +86,9 @@ follows.get('/:id/followers', authOptional, async (c) => {
     `
     if (currentUserId) {
       args.push(currentUserId as string)
-      query += `, EXISTS(SELECT 1 FROM follows f2 WHERE f2.follower_id = $${args.length} AND f2.following_id = u.id) as "isFollowing"`
+      query += `, EXISTS(SELECT 1 FROM follows f2 WHERE f2.follower_id = $${args.length} AND f2.following_id = u.id) as "is_following"`
     } else {
-      query += `, false as "isFollowing"`
+      query += `, false as "is_following"`
     }
 
     query += `
@@ -138,9 +138,9 @@ follows.get('/:id/following', authOptional, async (c) => {
     `
     if (currentUserId) {
       args.push(currentUserId as string)
-      query += `, EXISTS(SELECT 1 FROM follows f2 WHERE f2.follower_id = $${args.length} AND f2.following_id = u.id) as "isFollowing"`
+      query += `, EXISTS(SELECT 1 FROM follows f2 WHERE f2.follower_id = $${args.length} AND f2.following_id = u.id) as "is_following"`
     } else {
-      query += `, false as "isFollowing"`
+      query += `, false as "is_following"`
     }
 
     query += `

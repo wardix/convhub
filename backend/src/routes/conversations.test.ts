@@ -108,6 +108,25 @@ describe('conversations routes', () => {
     const data = await res.json()
     expect(data.conversation.id).toBe(conversationId)
     expect(data.conversation.transcript).toBeDefined() // Should include full transcript
+    expect(data.conversation.has_liked).toBe(false)
+  })
+
+  it('should get a single conversation by ID with has_liked true when liked', async () => {
+    if (!testUserId || !conversationId) return
+
+    await sql`
+      INSERT INTO likes (user_id, conversation_id) VALUES (${testUserId}, ${conversationId})
+    `
+
+    const res = await app.request(`/api/conversations/${conversationId}`, {
+      headers: {
+        Cookie: `access_token=${authToken}`,
+      },
+    })
+    expect(res.status).toBe(200)
+    const data = await res.json()
+    expect(data.conversation.id).toBe(conversationId)
+    expect(data.conversation.has_liked).toBe(true)
   })
 
   it("should prevent deleting someone else's conversation", async () => {

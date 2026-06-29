@@ -41,9 +41,9 @@ tags.get('/:name/conversations', authOptional, async (c) => {
 
     if (userId) {
       args.push(userId as string)
-      query += `, EXISTS(SELECT 1 FROM likes l WHERE l.conversation_id = c.id AND l.user_id = $${args.length}) as "hasLiked" `
+      query += `, EXISTS(SELECT 1 FROM likes l WHERE l.conversation_id = c.id AND l.user_id = $${args.length}) as "has_liked" `
     } else {
-      query += `, false as "hasLiked" `
+      query += `, false as "has_liked" `
     }
 
     query += `

@@ -41,7 +41,29 @@ describe('users routes', () => {
     expect(res.status).toBe(200)
     const data = await res.json()
     expect(data.user.username).toBe('userprofile')
-    expect(data.user.isFollowing).toBe(false)
+    expect(data.user.is_following).toBe(false)
+  })
+
+  it('should get user profile with is_following true when followed', async () => {
+    if (!userId) return
+
+    // Create a new user that follows the test user
+    const [follower] = await sql`
+      INSERT INTO users (email, username, display_name) VALUES ('follower@example.com', 'follower', 'Follower') RETURNING id
+    `
+    await sql`
+      INSERT INTO follows (follower_id, following_id) VALUES (${follower.id}, ${userId})
+    `
+    const followerToken = await signAccessToken(follower.id)
+
+    const res = await app.request('/api/users/userprofile', {
+      headers: {
+        Cookie: `access_token=${followerToken}`,
+      },
+    })
+    expect(res.status).toBe(200)
+    const data = await res.json()
+    expect(data.user.is_following).toBe(true)
   })
 
   it('should get user conversations', async () => {

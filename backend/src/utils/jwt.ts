@@ -1,11 +1,9 @@
 import { type JWTPayload, SignJWT, jwtVerify } from 'jose'
 
-const accessSecret = new TextEncoder().encode(
-  process.env.JWT_SECRET || 'secret',
-)
-const refreshSecret = new TextEncoder().encode(
-  process.env.JWT_REFRESH_SECRET || 'refresh_secret',
-)
+import { config } from '../config.js'
+
+const accessSecret = new TextEncoder().encode(config.JWT_SECRET)
+const refreshSecret = new TextEncoder().encode(config.JWT_REFRESH_SECRET)
 
 export async function signAccessToken(userId: string): Promise<string> {
   return new SignJWT({ sub: userId })

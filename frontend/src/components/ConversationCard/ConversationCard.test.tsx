@@ -1,9 +1,21 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
+import { useAuth } from '../../hooks/useAuth'
 import { ConversationCard } from './ConversationCard'
 
+vi.mock('../../hooks/useAuth', () => ({
+  useAuth: vi.fn(),
+}))
+
 describe('ConversationCard', () => {
+  beforeEach(() => {
+    vi.mocked(useAuth).mockReturnValue({
+      user: null,
+      isAuthenticated: false,
+    } as any)
+  })
+
   const mockConversation = {
     id: 'conv-123',
     title: 'How to build a web app',
@@ -41,13 +53,17 @@ describe('ConversationCard', () => {
     expect(screen.getByText('johndoe')).toBeInTheDocument()
     expect(screen.getByText('#react')).toBeInTheDocument()
     expect(screen.getByText('#web')).toBeInTheDocument()
-    expect(screen.getByText('🤍 42')).toBeInTheDocument() // Likes
+    expect(screen.getByText('42')).toBeInTheDocument() // Likes
     expect(screen.getByText('💬 5')).toBeInTheDocument() // Comments
     expect(screen.getByText('👁️ 1337')).toBeInTheDocument() // Views
     expect(screen.getByText('📝 12')).toBeInTheDocument() // Messages
   })
 
   it('calls onLikeToggle when like button is clicked', () => {
+    vi.mocked(useAuth).mockReturnValue({
+      user: { id: 'test' },
+      isAuthenticated: true,
+    } as any)
     const onLikeToggle = vi.fn()
     render(
       <MemoryRouter>

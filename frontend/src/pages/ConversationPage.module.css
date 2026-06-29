@@ -147,12 +147,6 @@
   background-color: var(--bg-hover);
 }
 
-.actionBtn.liked {
-  border-color: #ef4444;
-  color: #ef4444;
-  background-color: rgba(239, 68, 68, 0.1);
-}
-
 .deleteBtn {
   margin-left: auto;
   color: #ef4444;
@@ -174,15 +168,4 @@
   color: var(--text-muted);
   background-color: var(--bg-secondary);
   border-radius: var(--radius-md);
-}
-
-.comments {
-  border-top: 1px solid var(--border-color);
-  padding-top: 2rem;
-}
-
-.commentsPlaceholder {
-  color: var(--text-muted);
-  font-style: italic;
-  margin-top: 1rem;
 }

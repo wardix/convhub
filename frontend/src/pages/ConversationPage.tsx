@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api/client'
+import { CommentSection } from '../components/CommentSection/CommentSection'
 import { ConversationViewer } from '../components/ConversationViewer/ConversationViewer'
+import { LikeButton } from '../components/LikeButton/LikeButton'
 import { useAuth } from '../hooks/useAuth'
 import type { ConversationDetail } from '../types'
 import styles from './ConversationPage.module.css'
@@ -9,14 +11,13 @@ import styles from './ConversationPage.module.css'
 export const ConversationPage = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { user, isAuthenticated } = useAuth()
+  const { user } = useAuth()
 
   const [conversation, setConversation] = useState<ConversationDetail | null>(
     null,
   )
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [isLiking, setIsLiking] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
@@ -39,35 +40,26 @@ export const ConversationPage = () => {
     }
   }, [id])
 
-  const handleLike = async () => {
-    if (!isAuthenticated) {
-      navigate('/login')
-      return
-    }
-
-    if (!conversation || isLiking) return
-
+  const handleLikeChange = async (targetId: string, isLiked: boolean) => {
     try {
-      setIsLiking(true)
-      if (conversation.hasLiked) {
-        await api.delete(`/conversations/${id}/like`)
-        setConversation({
-          ...conversation,
-          hasLiked: false,
-          likeCount: conversation.likeCount - 1,
-        })
+      if (isLiked) {
+        await api.post(`/conversations/${targetId}/like`)
+        setConversation((prev) =>
+          prev
+            ? { ...prev, hasLiked: true, likeCount: prev.likeCount + 1 }
+            : null,
+        )
       } else {
-        await api.post(`/conversations/${id}/like`)
-        setConversation({
-          ...conversation,
-          hasLiked: true,
-          likeCount: conversation.likeCount + 1,
-        })
+        await api.delete(`/conversations/${targetId}/like`)
+        setConversation((prev) =>
+          prev
+            ? { ...prev, hasLiked: false, likeCount: prev.likeCount - 1 }
+            : null,
+        )
       }
     } catch (err) {
       console.error('Failed to toggle like', err)
-    } finally {
-      setIsLiking(false)
+      throw err // Throw so LikeButton can revert its local optimistic state
     }
   }
 
@@ -176,14 +168,12 @@ export const ConversationPage = () => {
 
         {/* Action Bar */}
         <div className={styles.actionBar}>
-          <button
-            type="button"
-            className={`${styles.actionBtn} ${conversation.hasLiked ? styles.liked : ''}`}
-            onClick={handleLike}
-            disabled={isLiking}
-          >
-            {conversation.hasLiked ? '❤️' : '🤍'} {conversation.likeCount}
-          </button>
+          <LikeButton
+            conversationId={conversation.id}
+            likeCount={conversation.likeCount}
+            hasLiked={conversation.hasLiked}
+            onLikeChange={handleLikeChange}
+          />
 
           {isAuthor && (
             <button
@@ -209,13 +199,8 @@ export const ConversationPage = () => {
         )}
       </main>
 
-      {/* TODO: Comment section */}
-      <section className={styles.comments}>
-        <h3>Comments ({conversation.commentCount})</h3>
-        <p className={styles.commentsPlaceholder}>
-          Comments feature coming soon...
-        </p>
-      </section>
+      {/* Comment section */}
+      <CommentSection conversationId={conversation.id} />
     </div>
   )
 }

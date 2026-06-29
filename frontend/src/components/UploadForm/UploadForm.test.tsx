@@ -177,13 +177,13 @@ describe('UploadForm', () => {
     await waitFor(() => {
       expect(api.post).toHaveBeenCalledWith(
         '/conversations',
-        expect.objectContaining({
-          title: 'hello',
-          description: 'This is a test desc',
-          transcript: mockEntries,
-          tags: [],
-        }),
+        expect.any(FormData),
       )
+      const callArgs = vi.mocked(api.post).mock.calls[0]
+      const formData = callArgs[1] as FormData
+      expect(formData.get('title')).toBe('hello')
+      expect(formData.get('description')).toBe('This is a test desc')
+      expect(formData.has('tags')).toBe(false)
       expect(mockNavigate).toHaveBeenCalledWith('/conversations/conv-123')
     })
   })

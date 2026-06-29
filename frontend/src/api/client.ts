@@ -10,17 +10,21 @@ export class ApiError extends Error {
   }
 }
 
-async function apiFetch(
+async function apiFetch<T = unknown>(
   endpoint: string,
   options: RequestInit = {},
-): Promise<unknown> {
+): Promise<T> {
   const url = endpoint.startsWith('http') ? endpoint : `/api${endpoint}`
+  const isFormData = options.body instanceof FormData
+
+  const headers = new Headers(options.headers)
+  if (!isFormData && !headers.has('Content-Type')) {
+    headers.set('Content-Type', 'application/json')
+  }
+
   const config = {
     ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
+    headers,
     credentials: 'include' as RequestCredentials,
   }
 
@@ -67,20 +71,24 @@ async function apiFetch(
 }
 
 export const api = {
-  get: (endpoint: string, options?: RequestInit) =>
-    apiFetch(endpoint, { ...options, method: 'GET' }),
-  post: (endpoint: string, body?: unknown, options?: RequestInit) =>
-    apiFetch(endpoint, {
+  get: <T = unknown>(endpoint: string, options?: RequestInit) =>
+    apiFetch<T>(endpoint, { ...options, method: 'GET' }),
+  post: <T = unknown>(
+    endpoint: string,
+    body?: unknown,
+    options?: RequestInit,
+  ) =>
+    apiFetch<T>(endpoint, {
       ...options,
       method: 'POST',
-      body: JSON.stringify(body),
+      body: body instanceof FormData ? body : JSON.stringify(body),
     }),
-  put: (endpoint: string, body?: unknown, options?: RequestInit) =>
-    apiFetch(endpoint, {
+  put: <T = unknown>(endpoint: string, body?: unknown, options?: RequestInit) =>
+    apiFetch<T>(endpoint, {
       ...options,
       method: 'PUT',
-      body: JSON.stringify(body),
+      body: body instanceof FormData ? body : JSON.stringify(body),
     }),
-  delete: (endpoint: string, options?: RequestInit) =>
-    apiFetch(endpoint, { ...options, method: 'DELETE' }),
+  delete: <T = unknown>(endpoint: string, options?: RequestInit) =>
+    apiFetch<T>(endpoint, { ...options, method: 'DELETE' }),
 }

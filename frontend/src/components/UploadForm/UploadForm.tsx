@@ -123,11 +123,14 @@ export const UploadForm = () => {
     setError(null)
 
     try {
-      const formData = {
-        title,
-        description,
-        transcript: entries,
-        tags: tags.map((t) => t.name), // just send tag names, backend handles creation
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('title', title)
+      if (description) {
+        formData.append('description', description)
+      }
+      if (tags.length > 0) {
+        formData.append('tags', tags.map((t) => t.name).join(','))
       }
 
       const response = await api.post<{ id: string }>(

@@ -7,6 +7,7 @@ interface AuthContextType {
   isLoading: boolean
   isAuthenticated: boolean
   login: (user: User) => void
+  register: (user: User) => void
   logout: () => void
 }
 
@@ -35,6 +36,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(userData)
   }
 
+  const register = (userData: User) => {
+    setUser(userData)
+  }
+
   const logout = async () => {
     try {
       await api.post('/auth/logout')
@@ -52,6 +57,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         isLoading,
         isAuthenticated: !!user,
         login,
+        register,
         logout,
       }}
     >

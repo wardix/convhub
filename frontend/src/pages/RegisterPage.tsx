@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ApiError, api } from '../api/client'
 import { FormInput } from '../components/AuthForms/FormInput'
-import { GoogleAuthButton } from '../components/AuthForms/GoogleAuthButton'
 import { PasswordStrength } from '../components/AuthForms/PasswordStrength'
 import { useAuth } from '../hooks/useAuth'
 import styles from './Auth.module.css'
@@ -95,10 +94,6 @@ export const RegisterPage = () => {
     }
   }
 
-  const handleGoogleLogin = async () => {
-    window.location.href = '/api/auth/google'
-  }
-
   return (
     <div className={styles.authContainer}>
       <div className={styles.authCard}>
@@ -173,11 +168,12 @@ export const RegisterPage = () => {
           </button>
         </form>
 
-        <div className={styles.divider}>
+        {/* TODO: Implement Google OAuth */}
+        {/* <div className={styles.divider}>
           <span>or continue with</span>
         </div>
 
-        <GoogleAuthButton onClick={handleGoogleLogin} isLoading={isLoading} />
+        <GoogleAuthButton onClick={handleGoogleLogin} isLoading={isLoading} /> */}
 
         <p className={styles.footerText}>
           Already have an account? <Link to="/login">Log in</Link>

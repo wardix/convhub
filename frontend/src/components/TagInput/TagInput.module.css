@@ -1,0 +1,164 @@
+.container {
+  position: relative;
+  width: 100%;
+}
+
+.inputWrapper {
+  width: 100%;
+  min-height: 48px;
+  padding: 0.5rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  transition: all var(--transition-fast);
+  cursor: text;
+}
+
+.inputWrapper:focus-within {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+  background-color: var(--bg-primary);
+}
+
+.disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.disabled:focus-within {
+  border-color: var(--border-color);
+  box-shadow: none;
+  background-color: var(--bg-secondary);
+}
+
+.tagsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid;
+  animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.removeTagBtn {
+  background: transparent;
+  border: none;
+  color: inherit;
+  margin-left: 0.25rem;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0 0.125rem;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity var(--transition-fast);
+}
+
+.removeTagBtn:hover {
+  opacity: 1;
+}
+
+.input {
+  flex: 1;
+  min-width: 120px;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  padding: 0.25rem;
+  outline: none;
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  width: 100%;
+  max-height: 240px;
+  overflow-y: auto;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  z-index: 10;
+  animation: slideDown 0.2s ease-out;
+}
+
+.suggestionItem,
+.createItem,
+.loadingItem {
+  width: 100%;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color var(--transition-fast);
+}
+
+.suggestionItem:last-child,
+.createItem:last-child {
+  border-bottom: none;
+}
+
+.suggestionItem:hover,
+.createItem:hover {
+  background-color: var(--bg-secondary);
+}
+
+.suggestionColor {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.createItem {
+  color: var(--accent-primary);
+}
+
+.loadingItem {
+  color: var(--text-muted);
+  cursor: default;
+}
+
+.loadingItem:hover {
+  background-color: transparent;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

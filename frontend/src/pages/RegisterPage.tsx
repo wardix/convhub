@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Helmet } from 'react-helmet-async'
 import { Link, useNavigate } from 'react-router-dom'
 import { ApiError, api } from '../api/client'
 import { FormInput } from '../components/AuthForms/FormInput'
@@ -95,90 +96,100 @@ export const RegisterPage = () => {
   }
 
   return (
-    <div className={styles.authContainer}>
-      <div className={styles.authCard}>
-        <div className={styles.header}>
-          <h1 className={styles.logo}>ConvHub</h1>
-          <p className={styles.tagline}>
-            Create an account to join the community.
+    <>
+      <Helmet>
+        <title>Sign Up — ConvHub</title>
+        <meta name="description" content="Create a new ConvHub account." />
+      </Helmet>
+      <div className={styles.authContainer}>
+        <div className={styles.authCard}>
+          <div className={styles.header}>
+            <h1 className={styles.logo}>ConvHub</h1>
+            <p className={styles.tagline}>
+              Create an account to join the community.
+            </p>
+          </div>
+
+          {error && <div className={styles.mainError}>{error}</div>}
+
+          <form onSubmit={handleSubmit} className={styles.form} noValidate>
+            <FormInput
+              label="Email"
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              error={fieldErrors.email}
+              disabled={isLoading}
+            />
+
+            <FormInput
+              label="Username"
+              type="text"
+              placeholder="johndoe"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              error={fieldErrors.username}
+              disabled={isLoading}
+            />
+
+            <FormInput
+              label="Display Name (Optional)"
+              type="text"
+              placeholder="John Doe"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              error={fieldErrors.displayName}
+              disabled={isLoading}
+            />
+
+            <FormInput
+              label="Password"
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              error={fieldErrors.password}
+              disabled={isLoading}
+            />
+
+            <PasswordStrength password={password} />
+
+            <FormInput
+              label="Confirm Password"
+              type="password"
+              placeholder="••••••••"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              error={fieldErrors.confirmPassword}
+              disabled={isLoading}
+            />
+
+            <button
+              type="submit"
+              className={styles.submitBtn}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <span className={styles.spinner} />
+              ) : (
+                'Create account'
+              )}
+            </button>
+          </form>
+
+          {/* TODO: Implement Google OAuth */}
+          {/* <div className={styles.divider}>
+            <span>or continue with</span>
+          </div>
+
+          <GoogleAuthButton onClick={handleGoogleLogin} isLoading={isLoading} /> */}
+
+          <p className={styles.footerText}>
+            Already have an account? <Link to="/login">Log in</Link>
           </p>
         </div>
-
-        {error && <div className={styles.mainError}>{error}</div>}
-
-        <form onSubmit={handleSubmit} className={styles.form} noValidate>
-          <FormInput
-            label="Email"
-            type="email"
-            placeholder="you@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            error={fieldErrors.email}
-            disabled={isLoading}
-          />
-
-          <FormInput
-            label="Username"
-            type="text"
-            placeholder="johndoe"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            error={fieldErrors.username}
-            disabled={isLoading}
-          />
-
-          <FormInput
-            label="Display Name (Optional)"
-            type="text"
-            placeholder="John Doe"
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
-            error={fieldErrors.displayName}
-            disabled={isLoading}
-          />
-
-          <FormInput
-            label="Password"
-            type="password"
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            error={fieldErrors.password}
-            disabled={isLoading}
-          />
-
-          <PasswordStrength password={password} />
-
-          <FormInput
-            label="Confirm Password"
-            type="password"
-            placeholder="••••••••"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            error={fieldErrors.confirmPassword}
-            disabled={isLoading}
-          />
-
-          <button
-            type="submit"
-            className={styles.submitBtn}
-            disabled={isLoading}
-          >
-            {isLoading ? <span className={styles.spinner} /> : 'Create account'}
-          </button>
-        </form>
-
-        {/* TODO: Implement Google OAuth */}
-        {/* <div className={styles.divider}>
-          <span>or continue with</span>
-        </div>
-
-        <GoogleAuthButton onClick={handleGoogleLogin} isLoading={isLoading} /> */}
-
-        <p className={styles.footerText}>
-          Already have an account? <Link to="/login">Log in</Link>
-        </p>
       </div>
-    </div>
+    </>
   )
 }

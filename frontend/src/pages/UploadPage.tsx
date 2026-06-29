@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { Helmet } from 'react-helmet-async'
 import { useNavigate } from 'react-router-dom'
 import { UploadForm } from '../components/UploadForm/UploadForm'
 import { useAuth } from '../hooks/useAuth'
@@ -19,16 +20,25 @@ export const UploadPage = () => {
   }
 
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <h1 className={styles.title}>Upload Conversation</h1>
-        <p className={styles.subtitle}>
-          Share your interesting AI interactions with the community. We'll
-          extract the transcript and stats automatically.
-        </p>
-      </div>
+    <>
+      <Helmet>
+        <title>Upload Conversation — ConvHub</title>
+        <meta
+          name="description"
+          content="Upload a new AI conversation to ConvHub."
+        />
+      </Helmet>
+      <div className={styles.container}>
+        <div className={styles.header}>
+          <h1 className={styles.title}>Upload Conversation</h1>
+          <p className={styles.subtitle}>
+            Share your interesting AI interactions with the community. We'll
+            extract the transcript and stats automatically.
+          </p>
+        </div>
 
-      <UploadForm />
-    </div>
+        <UploadForm />
+      </div>
+    </>
   )
 }

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { Helmet } from 'react-helmet-async'
 import { useSearchParams } from 'react-router-dom'
 import { api } from '../api/client'
 import { ConversationCard } from '../components/ConversationCard/ConversationCard'
@@ -91,129 +92,138 @@ export const ExplorePage = () => {
   }
 
   return (
-    <div className={styles.container}>
-      <div className={styles.searchHeader}>
-        <div className={styles.searchContainer}>
-          <SearchBar
-            onSearch={handleSearch}
-            initialValue={searchQuery}
-            placeholder="Search conversations by title, author, or content..."
-          />
+    <>
+      <Helmet>
+        <title>Explore AI Conversations — ConvHub</title>
+        <meta
+          name="description"
+          content="Browse and search for the best AI conversations on ConvHub."
+        />
+      </Helmet>
+      <div className={styles.container}>
+        <div className={styles.searchHeader}>
+          <div className={styles.searchContainer}>
+            <SearchBar
+              onSearch={handleSearch}
+              initialValue={searchQuery}
+              placeholder="Search conversations by title, author, or content..."
+            />
+          </div>
+          <button
+            className={styles.mobileFilterBtn}
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            type="button"
+          >
+            {isSidebarOpen ? 'Hide Filters' : 'Show Filters'}
+          </button>
         </div>
-        <button
-          className={styles.mobileFilterBtn}
-          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          type="button"
-        >
-          {isSidebarOpen ? 'Hide Filters' : 'Show Filters'}
-        </button>
-      </div>
 
-      <div className={styles.layout}>
-        {/* Sidebar */}
-        <aside
-          className={`${styles.sidebar} ${isSidebarOpen ? styles.sidebarOpen : ''}`}
-        >
-          <div className={styles.sidebarSection}>
-            <h3 className={styles.sidebarTitle}>Sort By</h3>
-            <div className={styles.sortOptions}>
-              <button
-                type="button"
-                className={`${styles.sortBtn} ${activeSort === 'recent' ? styles.active : ''}`}
-                onClick={() => setActiveSort('recent')}
-              >
-                🕒 Recent
-              </button>
-              <button
-                type="button"
-                className={`${styles.sortBtn} ${activeSort === 'popular' ? styles.active : ''}`}
-                onClick={() => setActiveSort('popular')}
-              >
-                🔥 Most Popular
-              </button>
-              <button
-                type="button"
-                className={`${styles.sortBtn} ${activeSort === 'discussed' ? styles.active : ''}`}
-                onClick={() => setActiveSort('discussed')}
-              >
-                💬 Most Commented
-              </button>
-            </div>
-          </div>
-
-          <div className={styles.sidebarSection}>
-            <div className={styles.sidebarHeader}>
-              <h3 className={styles.sidebarTitle}>Popular Tags</h3>
-              {activeTag && (
+        <div className={styles.layout}>
+          {/* Sidebar */}
+          <aside
+            className={`${styles.sidebar} ${isSidebarOpen ? styles.sidebarOpen : ''}`}
+          >
+            <div className={styles.sidebarSection}>
+              <h3 className={styles.sidebarTitle}>Sort By</h3>
+              <div className={styles.sortOptions}>
                 <button
                   type="button"
-                  className={styles.clearTagBtn}
-                  onClick={() => setActiveTag('')}
+                  className={`${styles.sortBtn} ${activeSort === 'recent' ? styles.active : ''}`}
+                  onClick={() => setActiveSort('recent')}
                 >
-                  Clear filter
+                  🕒 Recent
                 </button>
-              )}
-            </div>
-            <div className={styles.tagList}>
-              {tags.slice(0, 20).map((tag) => (
                 <button
                   type="button"
-                  key={tag.id}
-                  className={`${styles.tagItem} ${activeTag === tag.name ? styles.activeTag : ''}`}
-                  onClick={() =>
-                    setActiveTag(activeTag === tag.name ? '' : tag.name)
-                  }
+                  className={`${styles.sortBtn} ${activeSort === 'popular' ? styles.active : ''}`}
+                  onClick={() => setActiveSort('popular')}
                 >
-                  <span className={styles.tagName}>#{tag.name}</span>
-                  <span className={styles.tagCount}>
-                    {tag.conversationCount}
-                  </span>
+                  🔥 Most Popular
                 </button>
-              ))}
-            </div>
-          </div>
-        </aside>
-
-        {/* Main Content */}
-        <main className={styles.mainContent}>
-          {isLoading ? (
-            <div className={styles.loadingState}>
-              <div className={styles.spinner} />
-              <p>Searching...</p>
-            </div>
-          ) : conversations.length > 0 ? (
-            <>
-              <div className={styles.grid}>
-                {conversations.map((conv) => (
-                  <ConversationCard key={conv.id} conversation={conv} />
-                ))}
+                <button
+                  type="button"
+                  className={`${styles.sortBtn} ${activeSort === 'discussed' ? styles.active : ''}`}
+                  onClick={() => setActiveSort('discussed')}
+                >
+                  💬 Most Commented
+                </button>
               </div>
+            </div>
 
-              {hasMore && (
-                <div className={styles.loadMoreContainer}>
+            <div className={styles.sidebarSection}>
+              <div className={styles.sidebarHeader}>
+                <h3 className={styles.sidebarTitle}>Popular Tags</h3>
+                {activeTag && (
                   <button
                     type="button"
-                    className={styles.loadMoreBtn}
-                    onClick={handleLoadMore}
-                    disabled={isLoadingMore}
+                    className={styles.clearTagBtn}
+                    onClick={() => setActiveTag('')}
                   >
-                    {isLoadingMore ? 'Loading...' : 'Load More'}
+                    Clear filter
                   </button>
-                </div>
-              )}
-            </>
-          ) : (
-            <div className={styles.emptyState}>
-              <div className={styles.emptyIcon}>🔍</div>
-              <h3 className={styles.emptyTitle}>No conversations found</h3>
-              <p className={styles.emptyDesc}>
-                Try adjusting your search query or filters to find what you're
-                looking for.
-              </p>
+                )}
+              </div>
+              <div className={styles.tagList}>
+                {tags.slice(0, 20).map((tag) => (
+                  <button
+                    type="button"
+                    key={tag.id}
+                    className={`${styles.tagItem} ${activeTag === tag.name ? styles.activeTag : ''}`}
+                    onClick={() =>
+                      setActiveTag(activeTag === tag.name ? '' : tag.name)
+                    }
+                  >
+                    <span className={styles.tagName}>#{tag.name}</span>
+                    <span className={styles.tagCount}>
+                      {tag.conversationCount}
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
-          )}
-        </main>
+          </aside>
+
+          {/* Main Content */}
+          <main className={styles.mainContent}>
+            {isLoading ? (
+              <div className={styles.loadingState}>
+                <div className={styles.spinner} />
+                <p>Searching...</p>
+              </div>
+            ) : conversations.length > 0 ? (
+              <>
+                <div className={styles.grid}>
+                  {conversations.map((conv) => (
+                    <ConversationCard key={conv.id} conversation={conv} />
+                  ))}
+                </div>
+
+                {hasMore && (
+                  <div className={styles.loadMoreContainer}>
+                    <button
+                      type="button"
+                      className={styles.loadMoreBtn}
+                      onClick={handleLoadMore}
+                      disabled={isLoadingMore}
+                    >
+                      {isLoadingMore ? 'Loading...' : 'Load More'}
+                    </button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className={styles.emptyState}>
+                <div className={styles.emptyIcon}>🔍</div>
+                <h3 className={styles.emptyTitle}>No conversations found</h3>
+                <p className={styles.emptyDesc}>
+                  Try adjusting your search query or filters to find what you're
+                  looking for.
+                </p>
+              </div>
+            )}
+          </main>
+        </div>
       </div>
-    </div>
+    </>
   )
 }

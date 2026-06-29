@@ -49,6 +49,12 @@ describe('CommentSection', () => {
         createdAt: new Date().toISOString(),
       },
     ],
+    pagination: {
+      total: 2,
+      page: 1,
+      limit: 20,
+      pages: 1,
+    },
   }
 
   beforeEach(() => {
@@ -60,7 +66,10 @@ describe('CommentSection', () => {
       user: null,
       isAuthenticated: false,
     } as any)
-    vi.mocked(api.get).mockResolvedValue({ data: [] })
+    vi.mocked(api.get).mockResolvedValue({
+      data: [],
+      pagination: { total: 0, page: 1, limit: 20, pages: 1 },
+    })
 
     render(
       <MemoryRouter>
@@ -112,7 +121,10 @@ describe('CommentSection', () => {
       user: { id: 'currentUser' },
       isAuthenticated: true,
     } as any)
-    vi.mocked(api.get).mockResolvedValue({ data: [] })
+    vi.mocked(api.get).mockResolvedValue({
+      data: [],
+      pagination: { total: 0, page: 1, limit: 20, pages: 1 },
+    })
     vi.mocked(api.post).mockResolvedValue({
       comment: {
         id: 'c3',
@@ -174,6 +186,55 @@ describe('CommentSection', () => {
     await waitFor(() => {
       expect(api.delete).toHaveBeenCalledWith('/comments/c2')
       expect(screen.queryByText('I agree')).not.toBeInTheDocument()
+    })
+  })
+
+  it('handles load more functionality', async () => {
+    vi.mocked(useAuth).mockReturnValue({
+      user: { id: 'currentUser' },
+      isAuthenticated: true,
+    } as any)
+
+    // First page with hasMore = true
+    vi.mocked(api.get)
+      .mockResolvedValueOnce({
+        data: [mockComments.data[0]],
+        pagination: { total: 2, page: 1, limit: 1, pages: 2 },
+      })
+      .mockResolvedValueOnce({
+        data: [mockComments.data[1]],
+        pagination: { total: 2, page: 2, limit: 1, pages: 2 },
+      })
+
+    render(
+      <MemoryRouter>
+        <CommentSection conversationId="conv1" />
+      </MemoryRouter>,
+    )
+
+    await waitFor(() => {
+      expect(
+        screen.getByText('This is a great conversation!'),
+      ).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: /load more comments/i }),
+      ).toBeInTheDocument()
+    })
+
+    const loadMoreBtn = screen.getByRole('button', {
+      name: /load more comments/i,
+    })
+    fireEvent.click(loadMoreBtn)
+
+    await waitFor(() => {
+      expect(api.get).toHaveBeenCalledWith(
+        '/conversations/conv1/comments?page=2&limit=20',
+      )
+      expect(screen.getByText('I agree')).toBeInTheDocument()
+      // Button should disappear since pages=2 and page=2
+      expect(
+        screen.queryByRole('button', { name: /load more comments/i }),
+      ).not.toBeInTheDocument()
     })
   })
 })

@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../../api/client'
 import { useAuth } from '../../hooks/useAuth'
-import type { Comment } from '../../types'
+import type { Comment, PaginatedResponse } from '../../types'
 import { formatTimeAgo } from '../../utils/formatDate'
 import styles from './CommentSection.module.css'
 
@@ -14,28 +14,43 @@ export const CommentSection = ({ conversationId }: CommentSectionProps) => {
   const { user, isAuthenticated } = useAuth()
 
   const [comments, setComments] = useState<Comment[]>([])
+  const [totalCount, setTotalCount] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const [newComment, setNewComment] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  useEffect(() => {
-    const fetchComments = async () => {
+  const fetchComments = useCallback(
+    async (pageNum: number, reset = false) => {
       try {
-        setIsLoading(true)
-        const data = await api.get<{ data: Comment[] }>(
-          `/conversations/${conversationId}/comments`,
+        if (reset) setIsLoading(true)
+        else setIsLoadingMore(true)
+
+        const data = await api.get<PaginatedResponse<Comment>>(
+          `/conversations/${conversationId}/comments?page=${pageNum}&limit=20`,
         )
-        setComments(data.data)
+
+        setComments((prev) => (reset ? data.data : [...prev, ...data.data]))
+        setTotalCount(data.pagination.total)
+        setHasMore(pageNum < data.pagination.pages)
+        setPage(pageNum)
       } catch (_err) {
         setError('Failed to load comments')
       } finally {
         setIsLoading(false)
+        setIsLoadingMore(false)
       }
-    }
-    fetchComments()
-  }, [conversationId])
+    },
+    [conversationId],
+  )
+
+  useEffect(() => {
+    fetchComments(1, true)
+  }, [fetchComments])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -51,6 +66,7 @@ export const CommentSection = ({ conversationId }: CommentSectionProps) => {
       )
 
       setComments((prev) => [data.comment, ...prev])
+      setTotalCount((prev) => prev + 1)
       setNewComment('')
     } catch (_err) {
       setError('Failed to post comment')
@@ -65,6 +81,7 @@ export const CommentSection = ({ conversationId }: CommentSectionProps) => {
     try {
       await api.delete(`/comments/${commentId}`)
       setComments((prev) => prev.filter((c) => c.id !== commentId))
+      setTotalCount((prev) => Math.max(0, prev - 1))
     } catch (_err) {
       setError('Failed to delete comment')
     }
@@ -72,7 +89,7 @@ export const CommentSection = ({ conversationId }: CommentSectionProps) => {
 
   return (
     <div className={styles.container}>
-      <h3 className={styles.title}>Comments ({comments.length})</h3>
+      <h3 className={styles.title}>Comments ({totalCount})</h3>
 
       {error && <div className={styles.error}>{error}</div>}
 
@@ -155,6 +172,19 @@ export const CommentSection = ({ conversationId }: CommentSectionProps) => {
               </div>
             </div>
           ))
+        )}
+
+        {hasMore && comments.length > 0 && (
+          <div className={styles.loadMoreContainer}>
+            <button
+              type="button"
+              className={styles.loadMoreBtn}
+              onClick={() => fetchComments(page + 1)}
+              disabled={isLoadingMore}
+            >
+              {isLoadingMore ? 'Loading...' : 'Load More Comments'}
+            </button>
+          </div>
         )}
       </div>
     </div>

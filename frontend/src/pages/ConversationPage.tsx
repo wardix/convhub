@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Helmet } from 'react-helmet-async'
 import { useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api/client'
 import { CommentSection } from '../components/CommentSection/CommentSection'
@@ -106,101 +107,115 @@ export const ConversationPage = () => {
   const isAuthor = user?.id === conversation.author.id
 
   return (
-    <div className={styles.container}>
-      {/* Header */}
-      <header className={styles.header}>
-        <h1 className={styles.title}>{conversation.title}</h1>
+    <>
+      <Helmet>
+        <title>
+          {conversation.title} by {conversation.author.username} — ConvHub
+        </title>
+        <meta
+          name="description"
+          content={
+            conversation.description ||
+            `Read this AI conversation by ${conversation.author.username} on ConvHub.`
+          }
+        />
+      </Helmet>
+      <div className={styles.container}>
+        {/* Header */}
+        <header className={styles.header}>
+          <h1 className={styles.title}>{conversation.title}</h1>
 
-        <div className={styles.meta}>
-          <div className={styles.author}>
-            <div className={styles.avatar}>
-              {conversation.author.username.charAt(0).toUpperCase()}
+          <div className={styles.meta}>
+            <div className={styles.author}>
+              <div className={styles.avatar}>
+                {conversation.author.username.charAt(0).toUpperCase()}
+              </div>
+              <div className={styles.authorInfo}>
+                <span className={styles.username}>
+                  {conversation.author.username}
+                </span>
+                <span className={styles.date}>
+                  {new Date(conversation.createdAt).toLocaleDateString(
+                    undefined,
+                    {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                    },
+                  )}
+                </span>
+              </div>
             </div>
-            <div className={styles.authorInfo}>
-              <span className={styles.username}>
-                {conversation.author.username}
+
+            <div className={styles.stats}>
+              <span className={styles.stat} title="Views">
+                👁️ {conversation.viewCount}
               </span>
-              <span className={styles.date}>
-                {new Date(conversation.createdAt).toLocaleDateString(
-                  undefined,
-                  {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric',
-                  },
-                )}
+              <span className={styles.stat} title="Messages">
+                💬 {conversation.messageCount}
               </span>
             </div>
           </div>
 
-          <div className={styles.stats}>
-            <span className={styles.stat} title="Views">
-              👁️ {conversation.viewCount}
-            </span>
-            <span className={styles.stat} title="Messages">
-              💬 {conversation.messageCount}
-            </span>
-          </div>
-        </div>
-
-        {conversation.tags && conversation.tags.length > 0 && (
-          <div className={styles.tags}>
-            {conversation.tags.map((tag) => (
-              <span
-                key={tag.id}
-                className={styles.tag}
-                style={{
-                  backgroundColor: tag.color
-                    ? `${tag.color}20`
-                    : 'var(--bg-secondary)',
-                  color: tag.color || 'var(--text-secondary)',
-                }}
-              >
-                #{tag.name}
-              </span>
-            ))}
-          </div>
-        )}
-
-        {conversation.description && (
-          <p className={styles.description}>{conversation.description}</p>
-        )}
-
-        {/* Action Bar */}
-        <div className={styles.actionBar}>
-          <LikeButton
-            conversationId={conversation.id}
-            likeCount={conversation.likeCount}
-            hasLiked={conversation.hasLiked}
-            onLikeChange={handleLikeChange}
-          />
-
-          {isAuthor && (
-            <button
-              type="button"
-              className={`${styles.actionBtn} ${styles.deleteBtn}`}
-              onClick={handleDelete}
-              disabled={isDeleting}
-            >
-              {isDeleting ? 'Deleting...' : '🗑️ Delete'}
-            </button>
+          {conversation.tags && conversation.tags.length > 0 && (
+            <div className={styles.tags}>
+              {conversation.tags.map((tag) => (
+                <span
+                  key={tag.id}
+                  className={styles.tag}
+                  style={{
+                    backgroundColor: tag.color
+                      ? `${tag.color}20`
+                      : 'var(--bg-secondary)',
+                    color: tag.color || 'var(--text-secondary)',
+                  }}
+                >
+                  #{tag.name}
+                </span>
+              ))}
+            </div>
           )}
-        </div>
-      </header>
 
-      {/* Transcript Viewer */}
-      <main className={styles.main}>
-        {conversation.transcript ? (
-          <ConversationViewer transcript={conversation.transcript} />
-        ) : (
-          <div className={styles.emptyTranscript}>
-            No transcript available for this conversation.
+          {conversation.description && (
+            <p className={styles.description}>{conversation.description}</p>
+          )}
+
+          {/* Action Bar */}
+          <div className={styles.actionBar}>
+            <LikeButton
+              conversationId={conversation.id}
+              likeCount={conversation.likeCount}
+              hasLiked={conversation.hasLiked}
+              onLikeChange={handleLikeChange}
+            />
+
+            {isAuthor && (
+              <button
+                type="button"
+                className={`${styles.actionBtn} ${styles.deleteBtn}`}
+                onClick={handleDelete}
+                disabled={isDeleting}
+              >
+                {isDeleting ? 'Deleting...' : '🗑️ Delete'}
+              </button>
+            )}
           </div>
-        )}
-      </main>
+        </header>
 
-      {/* Comment section */}
-      <CommentSection conversationId={conversation.id} />
-    </div>
+        {/* Transcript Viewer */}
+        <main className={styles.main}>
+          {conversation.transcript ? (
+            <ConversationViewer transcript={conversation.transcript} />
+          ) : (
+            <div className={styles.emptyTranscript}>
+              No transcript available for this conversation.
+            </div>
+          )}
+        </main>
+
+        {/* Comment section */}
+        <CommentSection conversationId={conversation.id} />
+      </div>
+    </>
   )
 }

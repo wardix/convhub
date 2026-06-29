@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Helmet } from 'react-helmet-async'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import { ConversationCard } from '../components/ConversationCard/ConversationCard'
@@ -42,111 +43,121 @@ export const HomePage = () => {
   }
 
   return (
-    <div className={styles.container}>
-      {/* Hero Section */}
-      <section className={styles.hero}>
-        <div className={styles.heroContent}>
-          <h1 className={styles.heroTitle}>
-            Share Your AI Conversations with the World
-          </h1>
-          <p className={styles.heroSubtitle}>
-            ConvHub is the place to discover, share, and discuss fascinating AI
-            interactions. Think of it as "GitHub Gists for AI conversations".
-          </p>
-          <div className={styles.heroActions}>
-            <Link to="/upload" className={styles.primaryBtn}>
-              Upload a Conversation
-            </Link>
-            <Link to="/explore" className={styles.secondaryBtn}>
-              Browse Conversations
-            </Link>
+    <>
+      <Helmet>
+        <title>ConvHub — Share Your AI Conversations</title>
+        <meta
+          name="description"
+          content="Discover and share the best AI conversations from Antigravity and other assistants."
+        />
+      </Helmet>
+      <div className={styles.container}>
+        {/* Hero Section */}
+        <section className={styles.hero}>
+          <div className={styles.heroContent}>
+            <h1 className={styles.heroTitle}>
+              Share Your AI Conversations with the World
+            </h1>
+            <p className={styles.heroSubtitle}>
+              ConvHub is the place to discover, share, and discuss fascinating
+              AI interactions. Think of it as "GitHub Gists for AI
+              conversations".
+            </p>
+            <div className={styles.heroActions}>
+              <Link to="/upload" className={styles.primaryBtn}>
+                Upload a Conversation
+              </Link>
+              <Link to="/explore" className={styles.secondaryBtn}>
+                Browse Conversations
+              </Link>
+            </div>
           </div>
-        </div>
 
-        {/* Animated background elements */}
-        <div className={styles.blob1} />
-        <div className={styles.blob2} />
-      </section>
+          {/* Animated background elements */}
+          <div className={styles.blob1} />
+          <div className={styles.blob2} />
+        </section>
 
-      <main className={styles.main}>
-        {isLoading ? (
-          <div className={styles.loadingState}>
-            <div className={styles.spinner} />
-            <p>Loading amazing conversations...</p>
-          </div>
-        ) : (
-          <>
-            {/* Trending Section */}
-            {trending.length > 0 && (
-              <section className={styles.section}>
-                <div className={styles.sectionHeader}>
-                  <h2 className={styles.sectionTitle}>
-                    🔥 Trending Conversations
-                  </h2>
-                  <Link to="/explore?sort=popular" className={styles.viewAll}>
-                    View all
-                  </Link>
-                </div>
-                <div className={styles.horizontalScroll}>
-                  {trending.map((conv) => (
-                    <div key={conv.id} className={styles.scrollItem}>
-                      <ConversationCard conversation={conv} />
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
+        <main className={styles.main}>
+          {isLoading ? (
+            <div className={styles.loadingState}>
+              <div className={styles.spinner} />
+              <p>Loading amazing conversations...</p>
+            </div>
+          ) : (
+            <>
+              {/* Trending Section */}
+              {trending.length > 0 && (
+                <section className={styles.section}>
+                  <div className={styles.sectionHeader}>
+                    <h2 className={styles.sectionTitle}>
+                      🔥 Trending Conversations
+                    </h2>
+                    <Link to="/explore?sort=popular" className={styles.viewAll}>
+                      View all
+                    </Link>
+                  </div>
+                  <div className={styles.horizontalScroll}>
+                    {trending.map((conv) => (
+                      <div key={conv.id} className={styles.scrollItem}>
+                        <ConversationCard conversation={conv} />
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
 
-            {/* Recent Uploads */}
-            {recent.length > 0 && (
-              <section className={styles.section}>
-                <div className={styles.sectionHeader}>
-                  <h2 className={styles.sectionTitle}>📤 Recent Uploads</h2>
-                  <Link to="/explore?sort=recent" className={styles.viewAll}>
-                    View all
-                  </Link>
-                </div>
-                <div className={styles.grid}>
-                  {recent.map((conv) => (
-                    <ConversationCard key={conv.id} conversation={conv} />
-                  ))}
-                </div>
-              </section>
-            )}
+              {/* Recent Uploads */}
+              {recent.length > 0 && (
+                <section className={styles.section}>
+                  <div className={styles.sectionHeader}>
+                    <h2 className={styles.sectionTitle}>📤 Recent Uploads</h2>
+                    <Link to="/explore?sort=recent" className={styles.viewAll}>
+                      View all
+                    </Link>
+                  </div>
+                  <div className={styles.grid}>
+                    {recent.map((conv) => (
+                      <ConversationCard key={conv.id} conversation={conv} />
+                    ))}
+                  </div>
+                </section>
+              )}
 
-            {/* Popular Tags */}
-            {tags.length > 0 && (
-              <section className={styles.section}>
-                <h2 className={styles.sectionTitle}>🏷️ Popular Tags</h2>
-                <div className={styles.tagCloud}>
-                  {tags.map((tag) => (
-                    <button
-                      type="button"
-                      key={tag.id}
-                      className={styles.tagBadge}
-                      onClick={() => handleTagClick(tag.name)}
-                      style={{
-                        backgroundColor: tag.color
-                          ? `${tag.color}20`
-                          : 'var(--bg-secondary)',
-                        borderColor: tag.color
-                          ? `${tag.color}50`
-                          : 'var(--border-color)',
-                        color: tag.color || 'var(--text-secondary)',
-                      }}
-                    >
-                      #{tag.name}
-                      <span className={styles.tagCount}>
-                        ({tag.conversationCount})
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </section>
-            )}
-          </>
-        )}
-      </main>
-    </div>
+              {/* Popular Tags */}
+              {tags.length > 0 && (
+                <section className={styles.section}>
+                  <h2 className={styles.sectionTitle}>🏷️ Popular Tags</h2>
+                  <div className={styles.tagCloud}>
+                    {tags.map((tag) => (
+                      <button
+                        type="button"
+                        key={tag.id}
+                        className={styles.tagBadge}
+                        onClick={() => handleTagClick(tag.name)}
+                        style={{
+                          backgroundColor: tag.color
+                            ? `${tag.color}20`
+                            : 'var(--bg-secondary)',
+                          borderColor: tag.color
+                            ? `${tag.color}50`
+                            : 'var(--border-color)',
+                          color: tag.color || 'var(--text-secondary)',
+                        }}
+                      >
+                        #{tag.name}
+                        <span className={styles.tagCount}>
+                          ({tag.conversationCount})
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </section>
+              )}
+            </>
+          )}
+        </main>
+      </div>
+    </>
   )
 }

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Helmet } from 'react-helmet-async'
 import { Link, useParams } from 'react-router-dom'
 import { api } from '../api/client'
 import { ConversationCard } from '../components/ConversationCard/ConversationCard'
@@ -170,142 +171,155 @@ export const ProfilePage = () => {
   })
 
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <div className={styles.avatar}>
-          {profile.avatarUrl ? (
-            <img src={profile.avatarUrl} alt={profile.username} />
-          ) : (
-            profile.username.charAt(0).toUpperCase()
-          )}
-        </div>
-
-        <div className={styles.info}>
-          <h1 className={styles.displayName}>
-            {profile.displayName || profile.username}
-          </h1>
-          <p className={styles.username}>@{profile.username}</p>
-
-          {profile.bio && <p className={styles.bio}>{profile.bio}</p>}
-
-          <p className={styles.joinDate}>Member since {joinDate}</p>
-
-          <div className={styles.stats}>
-            <button
-              type="button"
-              className={styles.statButton}
-              onClick={() => setActiveTab('conversations')}
-            >
-              <span className={styles.statValue}>
-                {profile.conversationCount}
-              </span>
-              <span className={styles.statLabel}>Conversations</span>
-            </button>
-            <button
-              type="button"
-              className={styles.statButton}
-              onClick={() => setActiveTab('followers')}
-            >
-              <span className={styles.statValue}>{profile.followerCount}</span>
-              <span className={styles.statLabel}>Followers</span>
-            </button>
-            <button
-              type="button"
-              className={styles.statButton}
-              onClick={() => setActiveTab('following')}
-            >
-              <span className={styles.statValue}>{profile.followingCount}</span>
-              <span className={styles.statLabel}>Following</span>
-            </button>
-          </div>
-
-          <div className={styles.actions}>
-            {isOwnProfile ? (
-              <Link to="/settings" className={styles.editButton}>
-                Edit Profile
-              </Link>
+    <>
+      <Helmet>
+        <title>@{profile.username} — ConvHub</title>
+        <meta
+          name="description"
+          content={`View the profile and conversations of ${profile.username} on ConvHub.`}
+        />
+      </Helmet>
+      <div className={styles.container}>
+        <div className={styles.header}>
+          <div className={styles.avatar}>
+            {profile.avatarUrl ? (
+              <img src={profile.avatarUrl} alt={profile.username} />
             ) : (
-              <FollowButton
-                userId={profile.id}
-                isFollowing={profile.isFollowing}
-                onFollowChange={handleFollowChange}
-              />
+              profile.username.charAt(0).toUpperCase()
             )}
           </div>
+
+          <div className={styles.info}>
+            <h1 className={styles.displayName}>
+              {profile.displayName || profile.username}
+            </h1>
+            <p className={styles.username}>@{profile.username}</p>
+
+            {profile.bio && <p className={styles.bio}>{profile.bio}</p>}
+
+            <p className={styles.joinDate}>Member since {joinDate}</p>
+
+            <div className={styles.stats}>
+              <button
+                type="button"
+                className={styles.statButton}
+                onClick={() => setActiveTab('conversations')}
+              >
+                <span className={styles.statValue}>
+                  {profile.conversationCount}
+                </span>
+                <span className={styles.statLabel}>Conversations</span>
+              </button>
+              <button
+                type="button"
+                className={styles.statButton}
+                onClick={() => setActiveTab('followers')}
+              >
+                <span className={styles.statValue}>
+                  {profile.followerCount}
+                </span>
+                <span className={styles.statLabel}>Followers</span>
+              </button>
+              <button
+                type="button"
+                className={styles.statButton}
+                onClick={() => setActiveTab('following')}
+              >
+                <span className={styles.statValue}>
+                  {profile.followingCount}
+                </span>
+                <span className={styles.statLabel}>Following</span>
+              </button>
+            </div>
+
+            <div className={styles.actions}>
+              {isOwnProfile ? (
+                <Link to="/settings" className={styles.editButton}>
+                  Edit Profile
+                </Link>
+              ) : (
+                <FollowButton
+                  userId={profile.id}
+                  isFollowing={profile.isFollowing}
+                  onFollowChange={handleFollowChange}
+                />
+              )}
+            </div>
+          </div>
         </div>
-      </div>
 
-      <div className={styles.tabs}>
-        <button
-          type="button"
-          className={`${styles.tab} ${activeTab === 'conversations' ? styles.activeTab : ''}`}
-          onClick={() => setActiveTab('conversations')}
-        >
-          Conversations
-        </button>
-        <button
-          type="button"
-          className={`${styles.tab} ${activeTab === 'followers' ? styles.activeTab : ''}`}
-          onClick={() => setActiveTab('followers')}
-        >
-          Followers
-        </button>
-        <button
-          type="button"
-          className={`${styles.tab} ${activeTab === 'following' ? styles.activeTab : ''}`}
-          onClick={() => setActiveTab('following')}
-        >
-          Following
-        </button>
-      </div>
-
-      <div className={styles.tabContent}>
-        {activeTab === 'conversations' &&
-          (conversations.length === 0 && !isLoadingTab ? (
-            <div className={styles.emptyState}>
-              No conversations shared yet.
-            </div>
-          ) : (
-            <div className={styles.grid}>
-              {conversations.map((conv) => (
-                <ConversationCard key={conv.id} conversation={conv} />
-              ))}
-            </div>
-          ))}
-
-        {(activeTab === 'followers' || activeTab === 'following') &&
-          (usersList.length === 0 && !isLoadingTab ? (
-            <div className={styles.emptyState}>
-              {activeTab === 'followers'
-                ? 'No followers yet.'
-                : 'Not following anyone yet.'}
-            </div>
-          ) : (
-            <div className={styles.usersList}>
-              {usersList.map((u) => (
-                <UserCard key={u.id} user={u} />
-              ))}
-            </div>
-          ))}
-
-        {hasMore && (
+        <div className={styles.tabs}>
           <button
             type="button"
-            className={styles.loadMore}
-            onClick={handleLoadMore}
-            disabled={isLoadingTab}
+            className={`${styles.tab} ${activeTab === 'conversations' ? styles.activeTab : ''}`}
+            onClick={() => setActiveTab('conversations')}
           >
-            {isLoadingTab ? 'Loading...' : 'Load More'}
+            Conversations
           </button>
-        )}
+          <button
+            type="button"
+            className={`${styles.tab} ${activeTab === 'followers' ? styles.activeTab : ''}`}
+            onClick={() => setActiveTab('followers')}
+          >
+            Followers
+          </button>
+          <button
+            type="button"
+            className={`${styles.tab} ${activeTab === 'following' ? styles.activeTab : ''}`}
+            onClick={() => setActiveTab('following')}
+          >
+            Following
+          </button>
+        </div>
 
-        {isLoadingTab &&
-          !hasMore &&
-          conversations.length === 0 &&
-          usersList.length === 0 && (
-            <div className={styles.loading}>Loading...</div>
+        <div className={styles.tabContent}>
+          {activeTab === 'conversations' &&
+            (conversations.length === 0 && !isLoadingTab ? (
+              <div className={styles.emptyState}>
+                No conversations shared yet.
+              </div>
+            ) : (
+              <div className={styles.grid}>
+                {conversations.map((conv) => (
+                  <ConversationCard key={conv.id} conversation={conv} />
+                ))}
+              </div>
+            ))}
+
+          {(activeTab === 'followers' || activeTab === 'following') &&
+            (usersList.length === 0 && !isLoadingTab ? (
+              <div className={styles.emptyState}>
+                {activeTab === 'followers'
+                  ? 'No followers yet.'
+                  : 'Not following anyone yet.'}
+              </div>
+            ) : (
+              <div className={styles.usersList}>
+                {usersList.map((u) => (
+                  <UserCard key={u.id} user={u} />
+                ))}
+              </div>
+            ))}
+
+          {hasMore && (
+            <button
+              type="button"
+              className={styles.loadMore}
+              onClick={handleLoadMore}
+              disabled={isLoadingTab}
+            >
+              {isLoadingTab ? 'Loading...' : 'Load More'}
+            </button>
           )}
+
+          {isLoadingTab &&
+            !hasMore &&
+            conversations.length === 0 &&
+            usersList.length === 0 && (
+              <div className={styles.loading}>Loading...</div>
+            )}
+        </div>
       </div>
-    </div>
+    </>
   )
 }

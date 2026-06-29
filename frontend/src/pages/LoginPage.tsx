@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Helmet } from 'react-helmet-async'
 import { Link, useNavigate } from 'react-router-dom'
 import { ApiError, api } from '../api/client'
 import { FormInput } from '../components/AuthForms/FormInput'
@@ -68,64 +69,70 @@ export const LoginPage = () => {
   }
 
   return (
-    <div className={styles.authContainer}>
-      <div className={styles.authCard}>
-        <div className={styles.header}>
-          <h1 className={styles.logo}>ConvHub</h1>
-          <p className={styles.tagline}>
-            Welcome back! Please enter your details.
-          </p>
-        </div>
-
-        {error && <div className={styles.mainError}>{error}</div>}
-
-        <form onSubmit={handleSubmit} className={styles.form} noValidate>
-          <FormInput
-            label="Email"
-            type="email"
-            placeholder="Enter your email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            error={fieldErrors.email}
-            disabled={isLoading}
-            autoComplete="email"
-          />
-
-          <FormInput
-            label="Password"
-            type="password"
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            error={fieldErrors.password}
-            disabled={isLoading}
-            autoComplete="current-password"
-          />
-
-          <div className={styles.forgotPassword}>
-            <Link to="/forgot-password">Forgot password?</Link>
+    <>
+      <Helmet>
+        <title>Login — ConvHub</title>
+        <meta name="description" content="Log in to your ConvHub account." />
+      </Helmet>
+      <div className={styles.authContainer}>
+        <div className={styles.authCard}>
+          <div className={styles.header}>
+            <h1 className={styles.logo}>ConvHub</h1>
+            <p className={styles.tagline}>
+              Welcome back! Please enter your details.
+            </p>
           </div>
 
-          <button
-            type="submit"
-            className={styles.submitBtn}
-            disabled={isLoading}
-          >
-            {isLoading ? <span className={styles.spinner} /> : 'Log in'}
-          </button>
-        </form>
+          {error && <div className={styles.mainError}>{error}</div>}
 
-        {/* TODO: Implement Google OAuth */}
-        {/* <div className={styles.divider}>
-          <span>or continue with</span>
+          <form onSubmit={handleSubmit} className={styles.form} noValidate>
+            <FormInput
+              label="Email"
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              error={fieldErrors.email}
+              disabled={isLoading}
+              autoComplete="email"
+            />
+
+            <FormInput
+              label="Password"
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              error={fieldErrors.password}
+              disabled={isLoading}
+              autoComplete="current-password"
+            />
+
+            <div className={styles.forgotPassword}>
+              <Link to="/forgot-password">Forgot password?</Link>
+            </div>
+
+            <button
+              type="submit"
+              className={styles.submitBtn}
+              disabled={isLoading}
+            >
+              {isLoading ? <span className={styles.spinner} /> : 'Log in'}
+            </button>
+          </form>
+
+          {/* TODO: Implement Google OAuth */}
+          {/* <div className={styles.divider}>
+            <span>or continue with</span>
+          </div>
+
+          <GoogleAuthButton onClick={handleGoogleLogin} isLoading={isLoading} /> */}
+
+          <p className={styles.footerText}>
+            Don't have an account? <Link to="/register">Sign up</Link>
+          </p>
         </div>
-
-        <GoogleAuthButton onClick={handleGoogleLogin} isLoading={isLoading} /> */}
-
-        <p className={styles.footerText}>
-          Don't have an account? <Link to="/register">Sign up</Link>
-        </p>
       </div>
-    </div>
+    </>
   )
 }

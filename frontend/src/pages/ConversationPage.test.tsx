@@ -2,6 +2,8 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { api } from '../api/client'
+import { ToastContainer } from '../components/ToastContainer/ToastContainer'
+import { ToastProvider } from '../context/ToastContext'
 import * as useAuthHook from '../hooks/useAuth'
 import { ConversationPage } from './ConversationPage'
 
@@ -44,9 +46,12 @@ describe('ConversationPage', () => {
 
     render(
       <MemoryRouter initialEntries={['/conversations/123']}>
-        <Routes>
-          <Route path="/conversations/:id" element={<ConversationPage />} />
-        </Routes>
+        <ToastProvider>
+          <Routes>
+            <Route path="/conversations/:id" element={<ConversationPage />} />
+          </Routes>
+          <ToastContainer />
+        </ToastProvider>
       </MemoryRouter>,
     )
 
@@ -81,9 +86,12 @@ describe('ConversationPage', () => {
 
     render(
       <MemoryRouter initialEntries={['/conversations/123']}>
-        <Routes>
-          <Route path="/conversations/:id" element={<ConversationPage />} />
-        </Routes>
+        <ToastProvider>
+          <Routes>
+            <Route path="/conversations/:id" element={<ConversationPage />} />
+          </Routes>
+          <ToastContainer />
+        </ToastProvider>
       </MemoryRouter>,
     )
 

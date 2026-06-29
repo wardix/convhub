@@ -2,6 +2,8 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { api } from '../api/client'
+import { ToastContainer } from '../components/ToastContainer/ToastContainer'
+import { ToastProvider } from '../context/ToastContext'
 import * as useAuthHook from '../hooks/useAuth'
 import { SettingsPage } from './SettingsPage'
 
@@ -42,7 +44,10 @@ describe('SettingsPage', () => {
   it('renders settings page with user data pre-filled', () => {
     render(
       <MemoryRouter>
-        <SettingsPage />
+        <ToastProvider>
+          <SettingsPage />
+          <ToastContainer />
+        </ToastProvider>
       </MemoryRouter>,
     )
 
@@ -60,7 +65,10 @@ describe('SettingsPage', () => {
 
     render(
       <MemoryRouter>
-        <SettingsPage />
+        <ToastProvider>
+          <SettingsPage />
+          <ToastContainer />
+        </ToastProvider>
       </MemoryRouter>,
     )
 
@@ -94,7 +102,10 @@ describe('SettingsPage', () => {
 
     render(
       <MemoryRouter>
-        <SettingsPage />
+        <ToastProvider>
+          <SettingsPage />
+          <ToastContainer />
+        </ToastProvider>
       </MemoryRouter>,
     )
 

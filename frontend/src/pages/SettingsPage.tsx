@@ -2,21 +2,19 @@ import { useEffect, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { api } from '../api/client'
 import { useAuth } from '../hooks/useAuth'
+import { useToast } from '../hooks/useToast'
 import type { User } from '../types'
 import styles from './SettingsPage.module.css'
 
 export const SettingsPage = () => {
-  const { user, updateUser } = useAuth()
+  const { user, updateUser, logout } = useAuth()
+  const { showToast } = useToast()
 
   const [displayName, setDisplayName] = useState(user?.displayName || '')
   const [bio, setBio] = useState(user?.bio || '')
   const [avatarUrl, setAvatarUrl] = useState(user?.avatarUrl || '')
 
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [toast, setToast] = useState<{
-    message: string
-    type: 'success' | 'error'
-  } | null>(null)
 
   useEffect(() => {
     if (user) {
@@ -25,13 +23,6 @@ export const SettingsPage = () => {
       setAvatarUrl(user.avatarUrl || '')
     }
   }, [user])
-
-  const showToast = (message: string, type: 'success' | 'error') => {
-    setToast({ message, type })
-    setTimeout(() => {
-      setToast(null)
-    }, 3000)
-  }
 
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -59,15 +50,23 @@ export const SettingsPage = () => {
     }
   }
 
-  const handleDeleteAccount = () => {
+  const handleDeleteAccount = async () => {
     if (
       window.confirm(
         'Are you sure you want to delete your account? This cannot be undone.',
       )
     ) {
-      alert(
-        'Delete account functionality is not implemented in the MVP backend yet.',
-      )
+      try {
+        setIsSubmitting(true)
+        await api.delete('/users/me')
+        logout()
+        showToast('Account deleted successfully', 'success')
+      } catch (err) {
+        console.error('Failed to delete account', err)
+        showToast('Failed to delete account', 'error')
+      } finally {
+        setIsSubmitting(false)
+      }
     }
   }
 
@@ -187,14 +186,6 @@ export const SettingsPage = () => {
             Delete Account
           </button>
         </section>
-
-        {toast && (
-          <div
-            className={`${styles.toast} ${toast.type === 'error' ? styles.toastError : ''}`}
-          >
-            {toast.message}
-          </div>
-        )}
       </div>
     </>
   )

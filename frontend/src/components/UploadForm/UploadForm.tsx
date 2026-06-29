@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ApiError, api } from '../../api/client'
+import { useToast } from '../../hooks/useToast'
 import type { Tag, TranscriptEntry, TranscriptSummary } from '../../types'
 import {
   getTranscriptSummary,
@@ -28,7 +29,7 @@ export const UploadForm = () => {
   const [isDragging, setIsDragging] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const { showToast } = useToast()
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -45,15 +46,14 @@ export const UploadForm = () => {
   }
 
   const processFile = async (selectedFile: File) => {
-    setError(null)
     if (!selectedFile.name.endsWith('.jsonl')) {
-      setError('Please upload a valid .jsonl file')
+      showToast('Please upload a valid .jsonl file', 'error')
       return
     }
 
     if (selectedFile.size > 10 * 1024 * 1024) {
       // 10MB limit
-      setError('File is too large (max 10MB)')
+      showToast('File is too large (max 10MB)', 'error')
       return
     }
 
@@ -73,7 +73,10 @@ export const UploadForm = () => {
       setTitle(suggestedTitle)
       setStep(2)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to parse file')
+      showToast(
+        err instanceof Error ? err.message : 'Failed to parse file',
+        'error',
+      )
       resetFile()
     } finally {
       setIsProcessing(false)
@@ -110,17 +113,16 @@ export const UploadForm = () => {
     e.preventDefault()
 
     if (!title.trim()) {
-      setError('Title is required')
+      showToast('Title is required', 'error')
       return
     }
 
     if (!file || entries.length === 0) {
-      setError('Valid transcript file is required')
+      showToast('Valid transcript file is required', 'error')
       return
     }
 
     setIsSubmitting(true)
-    setError(null)
 
     try {
       const formData = new FormData()
@@ -137,12 +139,13 @@ export const UploadForm = () => {
         '/conversations',
         formData,
       )
+      showToast('Conversation uploaded successfully', 'success')
       navigate(`/conversations/${response.id}`)
     } catch (err) {
       if (err instanceof ApiError) {
-        setError(err.message)
+        showToast(err.message, 'error')
       } else {
-        setError('Failed to upload conversation')
+        showToast('Failed to upload conversation', 'error')
       }
       setIsSubmitting(false)
     }
@@ -150,8 +153,6 @@ export const UploadForm = () => {
 
   return (
     <div className={styles.container}>
-      {error && <div className={styles.errorBanner}>{error}</div>}
-
       {step === 1 ? (
         <div
           className={`${styles.dropZone} ${isDragging ? styles.dragging : ''} ${isProcessing ? styles.processing : ''}`}

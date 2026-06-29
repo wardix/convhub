@@ -1,7 +1,9 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { ToastContainer } from '../components/ToastContainer/ToastContainer'
 import { AuthContext } from '../context/AuthContext'
+import { ToastProvider } from '../context/ToastContext'
 import { UploadPage } from './UploadPage'
 
 const { mockNavigate } = vi.hoisted(() => ({
@@ -44,7 +46,10 @@ describe('UploadPage', () => {
         }}
       >
         <MemoryRouter>
-          <UploadPage />
+          <ToastProvider>
+            <UploadPage />
+            <ToastContainer />
+          </ToastProvider>
         </MemoryRouter>
       </AuthContext.Provider>,
     )

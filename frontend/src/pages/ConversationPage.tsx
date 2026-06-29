@@ -7,6 +7,7 @@ import { ConversationViewer } from '../components/ConversationViewer/Conversatio
 import { LikeButton } from '../components/LikeButton/LikeButton'
 import { TranscriptSkeleton } from '../components/Skeleton'
 import { useAuth } from '../hooks/useAuth'
+import { useToast } from '../hooks/useToast'
 import type { ConversationDetail } from '../types'
 import styles from './ConversationPage.module.css'
 
@@ -14,6 +15,7 @@ export const ConversationPage = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { user } = useAuth()
+  const { showToast } = useToast()
 
   const [conversation, setConversation] = useState<ConversationDetail | null>(
     null,
@@ -61,6 +63,7 @@ export const ConversationPage = () => {
       }
     } catch (err) {
       console.error('Failed to toggle like', err)
+      showToast('Failed to toggle like', 'error')
       throw err // Throw so LikeButton can revert its local optimistic state
     }
   }
@@ -73,9 +76,11 @@ export const ConversationPage = () => {
     try {
       setIsDeleting(true)
       await api.delete(`/conversations/${id}`)
+      showToast('Conversation deleted successfully', 'success')
       navigate('/')
     } catch (err) {
       console.error('Failed to delete conversation', err)
+      showToast('Failed to delete conversation', 'error')
       setIsDeleting(false)
     }
   }

@@ -1,8 +1,10 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { ErrorBoundary } from './components/ErrorBoundary/ErrorBoundary'
 import { Layout } from './components/Layout/Layout'
+import { ToastContainer } from './components/ToastContainer/ToastContainer'
 import { AuthProvider } from './context/AuthContext'
 import { ThemeProvider } from './context/ThemeContext'
+import { ToastProvider } from './context/ToastContext'
 import { useAuth } from './hooks/useAuth'
 import {
   ConversationPage,
@@ -121,11 +123,14 @@ const App = () => {
   return (
     <ErrorBoundary fallbackMessage="A critical application error occurred.">
       <ThemeProvider>
-        <AuthProvider>
-          <BrowserRouter>
-            <AppRoutes />
-          </BrowserRouter>
-        </AuthProvider>
+        <ToastProvider>
+          <AuthProvider>
+            <BrowserRouter>
+              <AppRoutes />
+              <ToastContainer />
+            </BrowserRouter>
+          </AuthProvider>
+        </ToastProvider>
       </ThemeProvider>
     </ErrorBoundary>
   )

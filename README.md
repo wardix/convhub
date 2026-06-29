@@ -1,5 +1,6 @@
 # ConvHub
 
+[![CI/CD Pipeline](https://github.com/wardix/convhub/actions/workflows/ci.yml/badge.svg)](https://github.com/wardix/convhub/actions/workflows/ci.yml)
 **A community platform for sharing Antigravity conversation experiences.**
 
 ConvHub lets users upload their [Antigravity](https://deepmind.google/) conversation transcripts (JSONL files) and share them with the community. Browse, search, like, comment, and discover how others use AI coding assistants.

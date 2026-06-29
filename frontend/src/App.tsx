@@ -1,4 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { ErrorBoundary } from './components/ErrorBoundary/ErrorBoundary'
 import { Layout } from './components/Layout/Layout'
 import { AuthProvider } from './context/AuthContext'
 import { ThemeProvider } from './context/ThemeContext'
@@ -41,19 +42,63 @@ const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
-        <Route index element={<HomePage />} />
-        <Route path="explore" element={<ExplorePage />} />
-        <Route path="conversations/:id" element={<ConversationPage />} />
-        <Route path="profile/:username" element={<ProfilePage />} />
-        <Route path="login" element={<LoginPage />} />
-        <Route path="register" element={<RegisterPage />} />
+        <Route
+          index
+          element={
+            <ErrorBoundary>
+              <HomePage />
+            </ErrorBoundary>
+          }
+        />
+        <Route
+          path="explore"
+          element={
+            <ErrorBoundary>
+              <ExplorePage />
+            </ErrorBoundary>
+          }
+        />
+        <Route
+          path="conversations/:id"
+          element={
+            <ErrorBoundary>
+              <ConversationPage />
+            </ErrorBoundary>
+          }
+        />
+        <Route
+          path="profile/:username"
+          element={
+            <ErrorBoundary>
+              <ProfilePage />
+            </ErrorBoundary>
+          }
+        />
+        <Route
+          path="login"
+          element={
+            <ErrorBoundary>
+              <LoginPage />
+            </ErrorBoundary>
+          }
+        />
+        <Route
+          path="register"
+          element={
+            <ErrorBoundary>
+              <RegisterPage />
+            </ErrorBoundary>
+          }
+        />
 
         {/* Protected Routes */}
         <Route
           path="upload"
           element={
             <ProtectedRoute>
-              <UploadPage />
+              <ErrorBoundary>
+                <UploadPage />
+              </ErrorBoundary>
             </ProtectedRoute>
           }
         />
@@ -61,7 +106,9 @@ const AppRoutes = () => {
           path="settings"
           element={
             <ProtectedRoute>
-              <SettingsPage />
+              <ErrorBoundary>
+                <SettingsPage />
+              </ErrorBoundary>
             </ProtectedRoute>
           }
         />
@@ -72,13 +119,15 @@ const AppRoutes = () => {
 
 const App = () => {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
-      </AuthProvider>
-    </ThemeProvider>
+    <ErrorBoundary fallbackMessage="A critical application error occurred.">
+      <ThemeProvider>
+        <AuthProvider>
+          <BrowserRouter>
+            <AppRoutes />
+          </BrowserRouter>
+        </AuthProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   )
 }
 

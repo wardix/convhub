@@ -8,8 +8,9 @@ interface ToolCallBlockProps {
 
 export const ToolCallBlock = ({
   name,
-  arguments: args,
+  arguments: rawArgs,
 }: ToolCallBlockProps) => {
+  const args = rawArgs || {}
   const [isExpanded, setIsExpanded] = useState(false)
 
   const getToolInfo = () => {

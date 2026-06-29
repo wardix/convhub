@@ -66,34 +66,42 @@ conversations.post('/', authRequired, async (c) => {
 
     // Process tags
     if (tagsStr) {
-      const tagNames = tagsStr
-        .split(',')
-        .map((t) => t.trim())
-        .filter((t) => t)
-      for (const name of tagNames) {
-        // Find or create tag
-        let [tag] = await sql`SELECT id FROM tags WHERE name = ${name}`
-        if (!tag) {
-          const rows = await sql`
-            INSERT INTO tags (name) VALUES (${name}) ON CONFLICT (name) DO NOTHING RETURNING id
-          `
-          if (rows.length > 0) {
-            tag = rows[0]
-          } else {
-            const existing = await sql`SELECT id FROM tags WHERE name = ${name}`
-            tag = existing[0]
-          }
-        }
+      const tagNames = Array.from(
+        new Set(
+          tagsStr
+            .split(',')
+            .map((t) => t.trim())
+            .filter((t) => t),
+        ),
+      )
 
+      if (tagNames.length > 0) {
+        const tagNamesStr = tagNames.join(',')
+        // Find or create tags in bulk
         await sql`
-          INSERT INTO conversation_tags (conversation_id, tag_id)
-          VALUES (${conversation.id}, ${tag.id})
+          INSERT INTO tags (name)
+          SELECT unnest(string_to_array(${tagNamesStr}, ','))
+          ON CONFLICT (name) DO NOTHING
         `
+
+        const tags = await sql`
+          SELECT id FROM tags WHERE name = ANY(string_to_array(${tagNamesStr}, ','))
+        `
+
+        const tagIds = tags.map((t) => t.id)
+        if (tagIds.length > 0) {
+          const tagIdsStr = tagIds.join(',')
+          await sql`
+            INSERT INTO conversation_tags (conversation_id, tag_id)
+            SELECT ${conversation.id}, unnest(string_to_array(${tagIdsStr}, ',')::uuid[])
+          `
+        }
       }
     }
 
     return c.json({ conversation }, 201)
-  } catch (_err) {
+  } catch (err) {
+    console.error('Error in POST /api/conversations:', err)
     return c.json({ error: 'Internal server error', status: 500 }, 500)
   }
 })

@@ -46,7 +46,8 @@ describe('conversations routes', () => {
 
     formData.append('title', 'Test Conversation')
     formData.append('description', 'Test Description')
-    formData.append('tags', 'test, ai')
+    const tagsArr = Array.from({ length: 15 }, (_, i) => `tag${i}`)
+    formData.append('tags', tagsArr.join(', '))
     formData.append(
       'file',
       new File([fileContent], 'transcript.jsonl', { type: 'application/json' }),

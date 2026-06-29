@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { TagInput } from './TagInput'
 
@@ -91,5 +91,55 @@ describe('TagInput', () => {
     fireEvent.keyDown(input, { key: 'Backspace' })
 
     expect(mockOnChange).toHaveBeenCalledWith([mockTags[0]])
+  })
+
+  it('allows navigating suggestions with arrow keys', async () => {
+    const { api } = await import('../../api/client')
+    vi.mocked(api.get).mockResolvedValue({
+      data: [
+        { id: '1', name: 'react', count: 10 },
+        { id: '2', name: 'redux', count: 5 },
+      ],
+    })
+
+    const mockOnChange = vi.fn()
+    render(<TagInput value={[]} onChange={mockOnChange} />)
+
+    const input = screen.getByPlaceholderText(/Add tags/i)
+    fireEvent.change(input, { target: { value: 're' } })
+
+    // Fast-forward debounce
+    await act(async () => {
+      vi.advanceTimersByTime(300)
+    })
+
+    // Check if react is rendered
+    expect(screen.getByText(/#react/i)).toBeInTheDocument()
+
+    // Arrow down selects first option
+    fireEvent.keyDown(input, { key: 'ArrowDown' })
+    const reactBtn = screen.getByText(/#react/i).closest('button')
+    expect(reactBtn).toHaveClass(/selected/i)
+
+    // Arrow down selects second option
+    fireEvent.keyDown(input, { key: 'ArrowDown' })
+    const reduxBtn = screen.getByText(/#redux/i).closest('button')
+    expect(reduxBtn).toHaveClass(/selected/i)
+
+    // Arrow down selects create option
+    fireEvent.keyDown(input, { key: 'ArrowDown' })
+    const createBtn = screen.getByText(/Create tag/i).closest('button')
+    expect(createBtn).toHaveClass(/selected/i)
+
+    // Arrow up goes back to second option
+    fireEvent.keyDown(input, { key: 'ArrowUp' })
+    expect(screen.getByText(/#redux/i).closest('button')).toHaveClass(
+      /selected/i,
+    )
+
+    // Enter selects the current option
+    fireEvent.keyDown(input, { key: 'Enter' })
+    expect(mockOnChange).toHaveBeenCalledTimes(1)
+    expect(mockOnChange.mock.calls[0][0][0].name).toBe('redux')
   })
 })

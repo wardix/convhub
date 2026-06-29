@@ -117,7 +117,9 @@
 }
 
 .suggestionItem:hover,
-.createItem:hover {
+.createItem:hover,
+.suggestionItem.selected,
+.createItem.selected {
   background-color: var(--bg-secondary);
 }
 

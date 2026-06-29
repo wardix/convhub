@@ -78,4 +78,19 @@ describe('ConversationCard', () => {
     fireEvent.click(likeButton)
     expect(onLikeToggle).toHaveBeenCalledWith('conv-123', false)
   })
+
+  it('is keyboard navigable', () => {
+    render(
+      <MemoryRouter>
+        <ConversationCard conversation={mockConversation} />
+      </MemoryRouter>,
+    )
+
+    const link = screen.getByRole('link')
+    expect(link).toHaveAttribute('href', '/conversations/conv-123')
+
+    // Links are natively focusable and handle Enter
+    link.focus()
+    expect(document.activeElement).toBe(link)
+  })
 })

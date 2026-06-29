@@ -16,6 +16,7 @@ export const TagInput = ({ value, onChange, maxTags = 5 }: TagInputProps) => {
   const [suggestions, setSuggestions] = useState<Tag[]>([])
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [selectedIndex, setSelectedIndex] = useState(-1)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const { showToast } = useToast()
 
@@ -23,6 +24,7 @@ export const TagInput = ({ value, onChange, maxTags = 5 }: TagInputProps) => {
     const fetchTags = async () => {
       if (!inputValue.trim()) {
         setSuggestions([])
+        setSelectedIndex(-1)
         return
       }
 
@@ -38,6 +40,7 @@ export const TagInput = ({ value, onChange, maxTags = 5 }: TagInputProps) => {
             !value.find((v) => v.name.toLowerCase() === t.name.toLowerCase()),
         )
         setSuggestions(available)
+        setSelectedIndex(-1)
       } catch (_err) {
         showToast('Failed to load tag suggestions', 'error')
       } finally {
@@ -98,10 +101,27 @@ export const TagInput = ({ value, onChange, maxTags = 5 }: TagInputProps) => {
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    const totalOptions = suggestions.length + (showCreateOption ? 1 : 0)
+
+    if (e.key === 'ArrowDown') {
       e.preventDefault()
-      if (inputValue.trim()) {
-        // If there's an exact match in suggestions, add it, otherwise create new
+      if (isDropdownOpen && totalOptions > 0) {
+        setSelectedIndex((prev) => (prev + 1) % totalOptions)
+      }
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      if (isDropdownOpen && totalOptions > 0) {
+        setSelectedIndex((prev) => (prev - 1 + totalOptions) % totalOptions)
+      }
+    } else if (e.key === 'Enter') {
+      e.preventDefault()
+      if (isDropdownOpen && selectedIndex >= 0) {
+        if (selectedIndex < suggestions.length) {
+          handleAddTag(suggestions[selectedIndex])
+        } else if (showCreateOption) {
+          handleAddTag(inputValue)
+        }
+      } else if (inputValue.trim()) {
         const match = suggestions.find(
           (s) => s.name.toLowerCase() === inputValue.trim().toLowerCase(),
         )
@@ -179,12 +199,13 @@ export const TagInput = ({ value, onChange, maxTags = 5 }: TagInputProps) => {
             <div className={styles.loadingItem}>Searching...</div>
           ) : (
             <>
-              {suggestions.map((tag) => (
+              {suggestions.map((tag, index) => (
                 <button
                   key={tag.id}
                   type="button"
-                  className={styles.suggestionItem}
+                  className={`${styles.suggestionItem} ${index === selectedIndex ? styles.selected : ''}`}
                   onClick={() => handleAddTag(tag)}
+                  onMouseEnter={() => setSelectedIndex(index)}
                 >
                   <span
                     className={styles.suggestionColor}
@@ -199,8 +220,9 @@ export const TagInput = ({ value, onChange, maxTags = 5 }: TagInputProps) => {
               {showCreateOption && (
                 <button
                   type="button"
-                  className={styles.createItem}
+                  className={`${styles.createItem} ${selectedIndex === suggestions.length ? styles.selected : ''}`}
                   onClick={() => handleAddTag(inputValue)}
+                  onMouseEnter={() => setSelectedIndex(suggestions.length)}
                 >
                   Create tag "<strong>{inputValue.trim()}</strong>"
                 </button>

@@ -62,7 +62,6 @@ export const ConversationPage = () => {
         )
       }
     } catch (err) {
-      console.error('Failed to toggle like', err)
       showToast('Failed to toggle like', 'error')
       throw err // Throw so LikeButton can revert its local optimistic state
     }
@@ -78,8 +77,7 @@ export const ConversationPage = () => {
       await api.delete(`/conversations/${id}`)
       showToast('Conversation deleted successfully', 'success')
       navigate('/')
-    } catch (err) {
-      console.error('Failed to delete conversation', err)
+    } catch (_err) {
       showToast('Failed to delete conversation', 'error')
       setIsDeleting(false)
     }

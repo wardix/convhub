@@ -23,7 +23,10 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('Uncaught error:', error, errorInfo)
+    if (import.meta.env.DEV) {
+      // biome-ignore lint/suspicious/noConsole: Only log errors in development
+      console.error('Uncaught error:', error, errorInfo)
+    }
   }
 
   public handleRetry = () => {

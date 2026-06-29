@@ -29,8 +29,10 @@ export const HomePage = () => {
         setTrending(trendingData.data)
         setRecent(recentData.data)
         setTags(tagsData.data.slice(0, 15)) // Show top 15 tags
-      } catch (error) {
-        console.error('Failed to load home data', error)
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : 'Failed to load home data',
+        )
       } finally {
         setIsLoading(false)
       }

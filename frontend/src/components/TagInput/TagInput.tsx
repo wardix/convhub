@@ -34,8 +34,8 @@ export const TagInput = ({ value, onChange, maxTags = 5 }: TagInputProps) => {
             !value.find((v) => v.name.toLowerCase() === t.name.toLowerCase()),
         )
         setSuggestions(available)
-      } catch (err) {
-        console.error('Failed to fetch tags', err)
+      } catch (_err) {
+        // Handle silently or maybe with a toast in the future
       } finally {
         setLoading(false)
       }

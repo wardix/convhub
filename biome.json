@@ -81,6 +81,16 @@
           }
         }
       }
+    },
+    {
+      "include": ["frontend/src/**/*.ts", "frontend/src/**/*.tsx"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noConsole": "error"
+          }
+        }
+      }
     }
   ]
 }

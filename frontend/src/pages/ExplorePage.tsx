@@ -34,8 +34,8 @@ export const ExplorePage = () => {
       try {
         const data = await api.get<{ data: Tag[] }>('/tags')
         setTags(data.data)
-      } catch (err) {
-        console.error('Failed to load tags', err)
+      } catch (_err) {
+        // Tag loading failure is not critical enough for a full error page
       }
     }
     fetchTags()
@@ -58,8 +58,8 @@ export const ExplorePage = () => {
           reset ? response.data : [...prev, ...response.data],
         )
         setHasMore(pageNum < response.pagination.pages)
-      } catch (err) {
-        console.error('Failed to load conversations', err)
+      } catch (_err) {
+        // Conversation loading failure
       } finally {
         setIsLoading(false)
         setIsLoadingMore(false)

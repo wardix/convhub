@@ -61,8 +61,7 @@ export const SettingsPage = () => {
         await api.delete('/users/me')
         logout()
         showToast('Account deleted successfully', 'success')
-      } catch (err) {
-        console.error('Failed to delete account', err)
+      } catch (_err) {
         showToast('Failed to delete account', 'error')
       } finally {
         setIsSubmitting(false)

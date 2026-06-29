@@ -34,11 +34,26 @@ ConvHub lets users upload their [Antigravity](https://deepmind.google/) conversa
 
 ### Prerequisites
 
-- [Bun](https://bun.sh/) v1.1+
-- [Node.js](https://nodejs.org/) v20+
-- [PostgreSQL](https://www.postgresql.org/) v15+
+- [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/) (Recommended)
+- Alternatively, for local manual setup:
+  - [Bun](https://bun.sh/) v1.1+
+  - [Node.js](https://nodejs.org/) v20+
+  - [PostgreSQL](https://www.postgresql.org/) v15+
 
-### Setup
+### Setup using Docker (Recommended)
+
+```bash
+# Clone the repo
+git clone https://github.com/wardix/convhub.git
+cd convhub
+
+# Start the entire stack with Docker Compose
+docker compose up
+```
+
+Visit `http://localhost:5173` to see the app. Hot reload is enabled for both frontend and backend. Data is persisted between restarts via a Docker volume.
+
+### Local Manual Setup
 
 ```bash
 # Clone the repo

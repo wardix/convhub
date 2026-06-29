@@ -74,7 +74,7 @@ async function apiFetch<T = unknown>(
     }
 
     if (response.status === 204) {
-      return null
+      return null as unknown as T
     }
 
     const data = await response.json().catch(() => ({}))

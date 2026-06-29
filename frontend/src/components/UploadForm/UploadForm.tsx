@@ -2,8 +2,9 @@ import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ApiError, api } from '../../api/client'
 import { useToast } from '../../hooks/useToast'
-import type { Tag, TranscriptEntry, TranscriptSummary } from '../../types'
+import type { Tag, TranscriptEntry } from '../../types'
 import {
+  type TranscriptSummary,
   getTranscriptSummary,
   parseTranscriptFile,
   suggestTitle,

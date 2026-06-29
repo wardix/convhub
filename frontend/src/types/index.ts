@@ -36,7 +36,13 @@ export interface ConversationDetail extends Conversation {
 export interface TranscriptEntry {
   stepIndex: number
   source: 'USER_EXPLICIT' | 'MODEL' | 'SYSTEM'
-  type: 'USER_INPUT' | 'PLANNER_RESPONSE' | 'TOOL_CALL' | 'TOOL_RESPONSE'
+  type:
+    | 'USER_INPUT'
+    | 'PLANNER_RESPONSE'
+    | 'TOOL_CALL'
+    | 'TOOL_RESPONSE'
+    | 'CHECKPOINT'
+    | 'CONVERSATION_HISTORY'
   status: 'DONE' | 'ERROR' | 'IN_PROGRESS'
   createdAt: string
   content?: string

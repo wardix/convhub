@@ -1,4 +1,4 @@
-import type { TranscriptEntry } from '../../../types'
+import type { TranscriptEntry } from '../../types'
 import { ErrorBoundary } from '../ErrorBoundary/ErrorBoundary'
 import styles from './ConversationViewer.module.css'
 import { MessageBubble } from './MessageBubble/MessageBubble'

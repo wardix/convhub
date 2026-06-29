@@ -1,7 +1,7 @@
 import ReactMarkdown from 'react-markdown'
 import type { Components } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import type { TranscriptEntry } from '../../../../types'
+import type { TranscriptEntry } from '../../../types'
 import { CodeBlock } from '../CodeBlock/CodeBlock'
 import { ThinkingBlock } from '../ThinkingBlock/ThinkingBlock'
 import { ToolCallBlock } from '../ToolCallBlock/ToolCallBlock'

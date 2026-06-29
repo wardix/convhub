@@ -72,7 +72,12 @@ describe('ConversationPage', () => {
       transcript: [],
     }
 
-    vi.mocked(api.get).mockResolvedValue(mockConversation)
+    vi.mocked(api.get).mockImplementation((url) => {
+      if (url.includes('/comments')) {
+        return Promise.resolve({ data: [] })
+      }
+      return Promise.resolve(mockConversation)
+    })
 
     render(
       <MemoryRouter initialEntries={['/conversations/123']}>
@@ -87,7 +92,7 @@ describe('ConversationPage', () => {
       expect(screen.getByText('otheruser')).toBeInTheDocument()
       expect(screen.getByText('A test desc')).toBeInTheDocument()
       expect(screen.getByText('#react')).toBeInTheDocument()
-      expect(screen.getByText('🤍 42')).toBeInTheDocument() // button text
+      expect(screen.getByText('42')).toBeInTheDocument() // button text
     })
   })
 })

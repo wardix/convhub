@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import type { Conversation } from '../../types'
+import { LikeButton } from '../LikeButton/LikeButton'
 import styles from './ConversationCard.module.css'
 
 interface ConversationCardProps {
@@ -24,14 +25,6 @@ export const ConversationCard = ({
     if (diffHours > 0) return `${diffHours}h ago`
     if (diffMins > 0) return `${diffMins}m ago`
     return 'just now'
-  }
-
-  const handleLike = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    if (onLikeToggle) {
-      onLikeToggle(conversation.id, conversation.hasLiked)
-    }
   }
 
   return (
@@ -88,14 +81,31 @@ export const ConversationCard = ({
             📝 {conversation.messageCount}
           </span>
         </div>
-        <button
-          type="button"
-          className={`${styles.likeBtn} ${conversation.hasLiked ? styles.liked : ''}`}
-          onClick={handleLike}
-          aria-label={conversation.hasLiked ? 'Unlike' : 'Like'}
+
+        {/* We wrap LikeButton in a div that stops propagation so clicking it doesn't trigger the Link */}
+        {/* biome-ignore lint/a11y/useKeyWithClickEvents: Wrapper to stop propagation */}
+        <div
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+          }}
         >
-          {conversation.hasLiked ? '❤️' : '🤍'} {conversation.likeCount}
-        </button>
+          <LikeButton
+            conversationId={conversation.id}
+            likeCount={conversation.likeCount}
+            hasLiked={conversation.hasLiked}
+            onLikeChange={(id, isLiked) => {
+              if (onLikeToggle) {
+                // If the parent provided a toggle handler, use it.
+                // Note: onLikeToggle expects currentStatus, but isLiked is the NEW status,
+                // wait, the signature in ConversationCard is `currentStatus: boolean`.
+                // So if isLiked is the NEW status, the OLD status is !isLiked.
+                return Promise.resolve(onLikeToggle(id, !isLiked))
+              }
+              return Promise.resolve()
+            }}
+          />
+        </div>
       </div>
     </Link>
   )

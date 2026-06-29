@@ -8,6 +8,13 @@ export interface User {
   created_at: string
 }
 
+export interface UserProfile extends User {
+  follower_count: number
+  following_count: number
+  conversation_count: number
+  isFollowing: boolean
+}
+
 export interface Conversation {
   id: string
   title: string

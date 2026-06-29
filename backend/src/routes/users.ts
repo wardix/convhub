@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { sql } from '../db/connection.js'
 import { authOptional, authRequired } from '../middleware/auth.js'
+import { buildConversationQuery } from '../utils/queryBuilder.js'
 
 const users = new Hono()
 
@@ -57,48 +58,16 @@ users.get('/:username/conversations', authOptional, async (c) => {
       return c.json({ error: 'User not found', status: 404 }, 404)
     }
 
-    const args: string[] = [user.id]
+    const { query, countQuery, args } = buildConversationQuery({
+      currentUserId: currentUserId as string | undefined,
+      authorId: user.id,
+      sort,
+      limit,
+      offset,
+    })
 
-    let query = `
-      SELECT c.id, c.title, c.description, c.message_count, c.like_count, 
-             c.comment_count, c.view_count, c.created_at,
-             json_build_object('id', c.user_id, 'username', u.username, 'avatar_url', u.avatar_url) as author,
-             COALESCE(json_agg(json_build_object('id', tg.id, 'name', tg.name, 'color', tg.color)) FILTER (WHERE tg.id IS NOT NULL), '[]') as tags
-    `
-
-    if (currentUserId) {
-      args.push(currentUserId as string)
-      query += `, EXISTS(SELECT 1 FROM likes l WHERE l.conversation_id = c.id AND l.user_id = $${args.length}) as "has_liked" `
-    } else {
-      query += `, false as "has_liked" `
-    }
-
-    query += `
-      FROM conversations c
-      JOIN users u ON c.user_id = u.id
-      LEFT JOIN conversation_tags ct ON c.id = ct.conversation_id
-      LEFT JOIN tags tg ON ct.tag_id = tg.id
-      WHERE c.user_id = $1
-      GROUP BY c.id, u.id
-    `
-
-    if (sort === 'popular') {
-      query += ' ORDER BY c.like_count DESC, c.created_at DESC'
-    } else if (sort === 'commented') {
-      query += ' ORDER BY c.comment_count DESC, c.created_at DESC'
-    } else {
-      query += ' ORDER BY c.created_at DESC'
-    }
-
-    const countRes = await sql.unsafe(
-      `SELECT COUNT(*) FROM (${query}) AS subquery`,
-      args,
-    )
+    const countRes = await sql.unsafe(countQuery, args)
     const total = Number.parseInt(countRes[0].count, 10)
-
-    query += ` LIMIT $${args.length + 1} OFFSET $${args.length + 2}`
-    args.push(limit.toString())
-    args.push(offset.toString())
 
     const rows = await sql.unsafe(query, args)
 

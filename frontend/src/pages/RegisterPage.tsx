@@ -5,6 +5,7 @@ import { ApiError, api } from '../api/client'
 import { FormInput } from '../components/AuthForms/FormInput'
 import { GoogleAuthButton } from '../components/AuthForms/GoogleAuthButton'
 import { PasswordStrength } from '../components/AuthForms/PasswordStrength'
+import { useAppConfig } from '../context/AppConfigContext'
 import { useAuth } from '../hooks/useAuth'
 import { useToast } from '../hooks/useToast'
 import { mapUser } from '../utils/mappers'
@@ -12,6 +13,7 @@ import styles from './Auth.module.css'
 
 export const RegisterPage = () => {
   const { isAuthenticated, register } = useAuth()
+  const { config } = useAppConfig()
   const { showToast } = useToast()
   const navigate = useNavigate()
 
@@ -183,16 +185,20 @@ export const RegisterPage = () => {
             </button>
           </form>
 
-          <div className={styles.divider}>
-            <span>or continue with</span>
-          </div>
+          {config.googleAuthEnabled && (
+            <>
+              <div className={styles.divider}>
+                <span>or continue with</span>
+              </div>
 
-          <GoogleAuthButton
-            onClick={() => {
-              window.location.href = '/api/auth/google'
-            }}
-            isLoading={isLoading}
-          />
+              <GoogleAuthButton
+                onClick={() => {
+                  window.location.href = '/api/auth/google'
+                }}
+                isLoading={isLoading}
+              />
+            </>
+          )}
 
           <p className={styles.footerText}>
             Already have an account? <Link to="/login">Log in</Link>

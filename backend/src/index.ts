@@ -37,6 +37,14 @@ app.route('/api/users', follows)
 app.route('/api/users', users)
 app.route('/api/feed', feed)
 
+// Public config endpoint
+app.get('/api/config', (c) => {
+  return c.json({
+    signupEnabled: process.env.DISABLE_SIGNUP !== 'true',
+    googleAuthEnabled: Boolean(process.env.GOOGLE_CLIENT_ID),
+  })
+})
+
 // Health check endpoint
 app.get('/api/health', (c) => {
   return c.json({ status: 'ok' })

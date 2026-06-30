@@ -43,6 +43,13 @@ function setAuthCookies(c: Context, accessToken: string, refreshToken: string) {
 
 auth.post('/register', registerLimiter, async (c) => {
   try {
+    if (process.env.DISABLE_SIGNUP === 'true') {
+      return c.json(
+        { error: 'Registration is currently disabled', status: 403 },
+        403,
+      )
+    }
+
     const { email, username, password, display_name } = await c.req.json()
 
     if (!validateEmail(email))

@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { ApiError, api } from '../api/client'
 import { FormInput } from '../components/AuthForms/FormInput'
 import { GoogleAuthButton } from '../components/AuthForms/GoogleAuthButton'
+import { useAppConfig } from '../context/AppConfigContext'
 import { useAuth } from '../hooks/useAuth'
 import { useToast } from '../hooks/useToast'
 import { mapUser } from '../utils/mappers'
@@ -11,6 +12,7 @@ import styles from './Auth.module.css'
 
 export const LoginPage = () => {
   const { isAuthenticated, login } = useAuth()
+  const { config } = useAppConfig()
   const { showToast } = useToast()
   const navigate = useNavigate()
 
@@ -129,20 +131,26 @@ export const LoginPage = () => {
             </button>
           </form>
 
-          <div className={styles.divider}>
-            <span>or continue with</span>
-          </div>
+          {config.googleAuthEnabled && (
+            <>
+              <div className={styles.divider}>
+                <span>or continue with</span>
+              </div>
 
-          <GoogleAuthButton
-            onClick={() => {
-              window.location.href = '/api/auth/google'
-            }}
-            isLoading={isLoading}
-          />
+              <GoogleAuthButton
+                onClick={() => {
+                  window.location.href = '/api/auth/google'
+                }}
+                isLoading={isLoading}
+              />
+            </>
+          )}
 
-          <p className={styles.footerText}>
-            Don't have an account? <Link to="/register">Sign up</Link>
-          </p>
+          {config.signupEnabled && (
+            <p className={styles.footerText}>
+              Don&apos;t have an account? <Link to="/register">Sign up</Link>
+            </p>
+          )}
         </div>
       </div>
     </>

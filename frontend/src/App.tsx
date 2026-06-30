@@ -4,6 +4,7 @@ import { ErrorBoundary } from './components/ErrorBoundary/ErrorBoundary'
 import { Layout } from './components/Layout/Layout'
 import { LoadingSpinner } from './components/LoadingSpinner'
 import { ToastContainer } from './components/ToastContainer/ToastContainer'
+import { AppConfigProvider, useAppConfig } from './context/AppConfigContext'
 import { AuthProvider } from './context/AuthContext'
 import { ThemeProvider } from './context/ThemeContext'
 import { ToastProvider } from './context/ToastContext'
@@ -42,6 +43,16 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   }
 
   if (!isAuthenticated) {
+    return <Navigate to="/login" replace />
+  }
+
+  return <>{children}</>
+}
+
+const SignupRoute = ({ children }: { children: React.ReactNode }) => {
+  const { config } = useAppConfig()
+
+  if (!config.signupEnabled) {
     return <Navigate to="/login" replace />
   }
 
@@ -103,9 +114,11 @@ const AppRoutes = () => {
           <Route
             path="register"
             element={
-              <ErrorBoundary>
-                <RegisterPage />
-              </ErrorBoundary>
+              <SignupRoute>
+                <ErrorBoundary>
+                  <RegisterPage />
+                </ErrorBoundary>
+              </SignupRoute>
             }
           />
 
@@ -161,12 +174,14 @@ const App = () => {
     <ErrorBoundary fallbackMessage="A critical application error occurred.">
       <ThemeProvider>
         <ToastProvider>
-          <AuthProvider>
-            <BrowserRouter>
-              <AppRoutes />
-              <ToastContainer />
-            </BrowserRouter>
-          </AuthProvider>
+          <AppConfigProvider>
+            <AuthProvider>
+              <BrowserRouter>
+                <AppRoutes />
+                <ToastContainer />
+              </BrowserRouter>
+            </AuthProvider>
+          </AppConfigProvider>
         </ToastProvider>
       </ThemeProvider>
     </ErrorBoundary>

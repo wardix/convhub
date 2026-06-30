@@ -114,17 +114,56 @@ describe('auth routes', () => {
     })
   })
 
-  describe('POST /api/auth/google', () => {
-    it('should return 501 Not Implemented', async () => {
-      const res = await app.request('/api/auth/google', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ credential: 'fake' }),
-      })
+  describe('GET /api/auth/google', () => {
+    it('should redirect to google oauth page', async () => {
+      process.env.GOOGLE_CLIENT_ID = 'test_client_id'
+      const res = await app.request('/api/auth/google')
 
-      expect(res.status).toBe(501)
-      const data = await res.json()
-      expect(data.error).toBe('Not Implemented')
+      expect(res.status).toBe(302)
+      expect(res.headers.get('Location')).toContain(
+        'accounts.google.com/o/oauth2/v2/auth',
+      )
+    })
+  })
+
+  describe('GET /api/auth/google/callback', () => {
+    it('should block new user registration if DISABLE_SIGNUP is true', async () => {
+      // Setup environment and mocks
+      process.env.DISABLE_SIGNUP = 'true'
+      process.env.GOOGLE_CLIENT_ID = 'test'
+      process.env.GOOGLE_CLIENT_SECRET = 'test'
+
+      const originalFetch = globalThis.fetch
+      globalThis.fetch = async (url: string | URL | Request) => {
+        const urlStr = url.toString()
+        if (urlStr.includes('oauth2.googleapis.com/token')) {
+          return {
+            ok: true,
+            json: async () => ({ access_token: 'test_token' }),
+          } as Response
+        }
+        if (urlStr.includes('googleapis.com/oauth2/v2/userinfo')) {
+          return {
+            ok: true,
+            json: async () => ({
+              id: '999999',
+              email: 'newgoogleuser@example.com',
+              name: 'New Google User',
+              picture: 'http://example.com/pic.jpg',
+            }),
+          } as Response
+        }
+        return new Response(null, { status: 404 })
+      }
+
+      try {
+        const res = await app.request('/api/auth/google/callback?code=testcode')
+        expect(res.status).toBe(302)
+        expect(res.headers.get('Location')).toBe('/?error=signup_disabled')
+      } finally {
+        process.env.DISABLE_SIGNUP = 'false'
+        globalThis.fetch = originalFetch
+      }
     })
   })
 

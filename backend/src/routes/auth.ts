@@ -236,6 +236,9 @@ auth.get('/google/callback', async (c) => {
         userId = byEmail[0].id
         await sql`UPDATE users SET oauth_provider = 'google', oauth_id = ${googleUser.id}, avatar_url = ${googleUser.picture} WHERE id = ${userId}`
       } else {
+        if (process.env.DISABLE_SIGNUP === 'true') {
+          return c.redirect('/?error=signup_disabled')
+        }
         // Create new user
         const username = `${googleUser.email.split('@')[0]}_${Date.now().toString(36)}`
         const [newUser] = await sql`

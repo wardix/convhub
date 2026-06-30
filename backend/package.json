@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "bun run --hot src/index.ts",
     "db:migrate": "bun run src/db/migrate.ts",
-    "create-user": "bun run src/scripts/create-user.ts"
+    "create-user": "bun run src/scripts/create-user.ts",
+    "delete-user": "bun run src/scripts/delete-user.ts"
   },
   "devDependencies": {
     "@types/bun": "latest"

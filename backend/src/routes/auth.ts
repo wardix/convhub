@@ -135,8 +135,127 @@ auth.post('/login', loginLimiter, async (c) => {
   }
 })
 
-auth.post('/google', async (c) => {
-  return c.json({ error: 'Not Implemented', status: 501 }, 501)
+auth.get('/google', (_c) => {
+  const clientId = process.env.GOOGLE_CLIENT_ID
+  if (!clientId) {
+    return _c.json({ error: 'Google OAuth not configured', status: 500 }, 500)
+  }
+
+  const callbackUrl =
+    process.env.GOOGLE_CALLBACK_URL ||
+    'http://localhost:3000/api/auth/google/callback'
+  const params = new URLSearchParams({
+    client_id: clientId,
+    redirect_uri: callbackUrl,
+    response_type: 'code',
+    scope: 'openid email profile',
+    access_type: 'offline',
+    prompt: 'consent',
+  })
+
+  return _c.redirect(
+    `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`,
+  )
+})
+
+auth.get('/google/callback', async (c) => {
+  try {
+    const code = c.req.query('code')
+    if (!code) {
+      return c.redirect('/?error=google_auth_failed')
+    }
+
+    const clientId = process.env.GOOGLE_CLIENT_ID
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET
+    const callbackUrl =
+      process.env.GOOGLE_CALLBACK_URL ||
+      'http://localhost:3000/api/auth/google/callback'
+
+    if (!clientId || !clientSecret) {
+      return c.redirect('/?error=google_not_configured')
+    }
+
+    // Exchange code for tokens
+    const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        code,
+        client_id: clientId,
+        client_secret: clientSecret,
+        redirect_uri: callbackUrl,
+        grant_type: 'authorization_code',
+      }),
+    })
+
+    if (!tokenRes.ok) {
+      return c.redirect('/?error=google_token_exchange_failed')
+    }
+
+    const tokenData = (await tokenRes.json()) as { access_token: string }
+
+    // Get user info
+    const userInfoRes = await fetch(
+      'https://www.googleapis.com/oauth2/v2/userinfo',
+      { headers: { Authorization: `Bearer ${tokenData.access_token}` } },
+    )
+
+    if (!userInfoRes.ok) {
+      return c.redirect('/?error=google_userinfo_failed')
+    }
+
+    const googleUser = (await userInfoRes.json()) as {
+      id: string
+      email: string
+      name: string
+      picture: string
+    }
+
+    // Find or create user
+    const existing =
+      await sql`SELECT id FROM users WHERE oauth_provider = 'google' AND oauth_id = ${googleUser.id}`
+
+    let userId: string
+
+    if (existing.length > 0) {
+      userId = existing[0].id
+    } else {
+      // Check if email already exists (link accounts)
+      const byEmail =
+        await sql`SELECT id FROM users WHERE email = ${googleUser.email}`
+
+      if (byEmail.length > 0) {
+        // Link Google to existing account
+        userId = byEmail[0].id
+        await sql`UPDATE users SET oauth_provider = 'google', oauth_id = ${googleUser.id}, avatar_url = ${googleUser.picture} WHERE id = ${userId}`
+      } else {
+        // Create new user
+        const username = `${googleUser.email.split('@')[0]}_${Date.now().toString(36)}`
+        const [newUser] = await sql`
+          INSERT INTO users (email, username, display_name, avatar_url, password_hash, oauth_provider, oauth_id)
+          VALUES (${googleUser.email}, ${username}, ${googleUser.name}, ${googleUser.picture}, '', 'google', ${googleUser.id})
+          RETURNING id
+        `
+        userId = newUser.id
+      }
+    }
+
+    // Issue tokens
+    const accessToken = await signAccessToken(userId)
+    const refreshToken = await signRefreshToken(userId)
+    const rtHash = await hashPassword(refreshToken)
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+
+    await sql`
+      INSERT INTO refresh_tokens (user_id, token_hash, expires_at)
+      VALUES (${userId}, ${rtHash}, ${expiresAt.toISOString()})
+    `
+
+    setAuthCookies(c, accessToken, refreshToken)
+    return c.redirect('/')
+  } catch (_err) {
+    return c.redirect('/?error=google_auth_error')
+  }
 })
 
 auth.post('/refresh', async (c) => {

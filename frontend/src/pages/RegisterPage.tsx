@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async'
 import { Link, useNavigate } from 'react-router-dom'
 import { ApiError, api } from '../api/client'
 import { FormInput } from '../components/AuthForms/FormInput'
+import { GoogleAuthButton } from '../components/AuthForms/GoogleAuthButton'
 import { PasswordStrength } from '../components/AuthForms/PasswordStrength'
 import { useAuth } from '../hooks/useAuth'
 import { useToast } from '../hooks/useToast'
@@ -182,12 +183,16 @@ export const RegisterPage = () => {
             </button>
           </form>
 
-          {/* TODO: Implement Google OAuth */}
-          {/* <div className={styles.divider}>
+          <div className={styles.divider}>
             <span>or continue with</span>
           </div>
 
-          <GoogleAuthButton onClick={handleGoogleLogin} isLoading={isLoading} /> */}
+          <GoogleAuthButton
+            onClick={() => {
+              window.location.href = '/api/auth/google'
+            }}
+            isLoading={isLoading}
+          />
 
           <p className={styles.footerText}>
             Already have an account? <Link to="/login">Log in</Link>
